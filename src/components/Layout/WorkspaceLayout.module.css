@@ -27,13 +27,21 @@
   background-color: #2d2d2d;
   border-bottom: 1px solid #3c3c3c;
   min-height: 35px;
-  overflow-x: auto;
+  overflow: hidden;
   flex-shrink: 0;
+  align-items: stretch;
+}
+
+.tabBarTabs {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow-x: auto;
   align-items: stretch;
   scrollbar-width: none;
 }
 
-.tabBar::-webkit-scrollbar {
+.tabBarTabs::-webkit-scrollbar {
   display: none;
 }
 
@@ -129,4 +137,48 @@
 .resizeHandle:hover,
 .resizeHandle[data-resize-handle-state='drag'] {
   background-color: #007acc;
+}
+
+.resizeHandleHorizontal {
+  height: 4px;
+  background-color: #3c3c3c;
+  transition: background-color 0.15s;
+}
+
+.resizeHandleHorizontal:hover,
+.resizeHandleHorizontal[data-resize-handle-state='drag'] {
+  background-color: #007acc;
+}
+
+.contentArea {
+  overflow: hidden;
+}
+
+.innerLayout {
+  height: 100%;
+  width: 100%;
+}
+
+.panelClose {
+  background: none;
+  border: none;
+  color: #969696;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 26px;
+  min-width: 26px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #3c3c3c;
+  flex-shrink: 0;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.panelClose:hover {
+  background-color: #4c4c4c;
+  color: #ffffff;
 }
