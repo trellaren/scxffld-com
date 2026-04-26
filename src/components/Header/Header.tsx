@@ -2,18 +2,19 @@ import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
-import { addPanel, toggleSidebar } from '../../store/workspaceSlice'
+import { addPanel, addTab, toggleSidebar } from '../../store/workspaceSlice'
 import type { PanelType } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
 import styles from './Header.module.css'
 
-function generateId() {
-  return `panel-${Date.now()}`
+function generateId(prefix = 'id') {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 }
 
 export default function Header() {
   const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.auth.user)
+  const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
@@ -27,12 +28,35 @@ export default function Header() {
     setUserMenuOpen(false)
   }
 
-  function handleNewPanel(type: PanelType) {
+  function handleNewTab(type: PanelType) {
+    const title = type === 'editor' ? 'New Document' : type === 'diagram' ? 'New Diagram' : 'Panel'
+    if (activePanelId) {
+      dispatch(
+        addTab({
+          panelId: activePanelId,
+          tab: { id: generateId('tab'), type, title },
+        }),
+      )
+    } else {
+      const tabId = generateId('tab')
+      dispatch(
+        addPanel({
+          id: generateId('panel'),
+          tabs: [{ id: tabId, type, title }],
+          activeTabId: tabId,
+        }),
+      )
+    }
+    closeAll()
+  }
+
+  function handleNewSplit() {
+    const tabId = generateId('tab')
     dispatch(
       addPanel({
-        id: generateId(),
-        type,
-        title: type === 'editor' ? 'New Document' : type === 'diagram' ? 'New Diagram' : 'Panel',
+        id: generateId('panel'),
+        tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
+        activeTabId: tabId,
       }),
     )
     closeAll()
@@ -66,14 +90,14 @@ export default function Header() {
             </button>
             {activeMenu === 'file' && (
               <ul className={styles.dropdown}>
-                <li className={styles.dropdownItem} onClick={() => handleNewPanel('editor')}>
+                <li className={styles.dropdownItem} onClick={() => handleNewTab('editor')}>
                   New Document
                 </li>
-                <li className={styles.dropdownItem} onClick={() => handleNewPanel('diagram')}>
+                <li className={styles.dropdownItem} onClick={() => handleNewTab('diagram')}>
                   New Diagram
                 </li>
-                <li className={styles.dropdownItem} onClick={() => handleNewPanel('empty')}>
-                  New Empty Panel
+                <li className={styles.dropdownItem} onClick={handleNewSplit}>
+                  New Split
                 </li>
               </ul>
             )}

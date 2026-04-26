@@ -2,10 +2,16 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export type PanelType = 'editor' | 'diagram' | 'empty'
 
-export interface Panel {
+export interface Tab {
   id: string
   type: PanelType
   title: string
+}
+
+export interface Panel {
+  id: string
+  tabs: Tab[]
+  activeTabId: string | null
 }
 
 export interface WorkspaceState {
@@ -16,8 +22,14 @@ export interface WorkspaceState {
 
 const initialState: WorkspaceState = {
   panels: [
-    { id: 'panel-1', type: 'editor', title: 'Document 1' },
-    { id: 'panel-2', type: 'diagram', title: 'Diagram 1' },
+    {
+      id: 'panel-1',
+      tabs: [
+        { id: 'tab-1', type: 'editor', title: 'Document 1' },
+        { id: 'tab-2', type: 'diagram', title: 'Diagram 1' },
+      ],
+      activeTabId: 'tab-1',
+    },
   ],
   activePanelId: 'panel-1',
   sidebarOpen: true,
@@ -30,8 +42,16 @@ const workspaceSlice = createSlice({
     setActivePanel(state, action: PayloadAction<string>) {
       state.activePanelId = action.payload
     },
+    setActiveTab(state, action: PayloadAction<{ panelId: string; tabId: string }>) {
+      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      if (panel) {
+        panel.activeTabId = action.payload.tabId
+      }
+      state.activePanelId = action.payload.panelId
+    },
     addPanel(state, action: PayloadAction<Panel>) {
       state.panels.push(action.payload)
+      state.activePanelId = action.payload.id
     },
     removePanel(state, action: PayloadAction<string>) {
       state.panels = state.panels.filter((p) => p.id !== action.payload)
@@ -39,10 +59,23 @@ const workspaceSlice = createSlice({
         state.activePanelId = state.panels[0]?.id ?? null
       }
     },
-    updatePanelType(state, action: PayloadAction<{ id: string; type: PanelType }>) {
-      const panel = state.panels.find((p) => p.id === action.payload.id)
+    addTab(state, action: PayloadAction<{ panelId: string; tab: Tab }>) {
+      const panel = state.panels.find((p) => p.id === action.payload.panelId)
       if (panel) {
-        panel.type = action.payload.type
+        panel.tabs.push(action.payload.tab)
+        panel.activeTabId = action.payload.tab.id
+      }
+      state.activePanelId = action.payload.panelId
+    },
+    removeTab(state, action: PayloadAction<{ panelId: string; tabId: string }>) {
+      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      if (panel) {
+        const idx = panel.tabs.findIndex((t) => t.id === action.payload.tabId)
+        panel.tabs = panel.tabs.filter((t) => t.id !== action.payload.tabId)
+        if (panel.activeTabId === action.payload.tabId) {
+          panel.activeTabId =
+            panel.tabs[Math.max(0, idx - 1)]?.id ?? panel.tabs[0]?.id ?? null
+        }
       }
     },
     toggleSidebar(state) {
@@ -51,5 +84,13 @@ const workspaceSlice = createSlice({
   },
 })
 
-export const { setActivePanel, addPanel, removePanel, updatePanelType, toggleSidebar } = workspaceSlice.actions
+export const {
+  setActivePanel,
+  setActiveTab,
+  addPanel,
+  removePanel,
+  addTab,
+  removeTab,
+  toggleSidebar,
+} = workspaceSlice.actions
 export default workspaceSlice.reducer
