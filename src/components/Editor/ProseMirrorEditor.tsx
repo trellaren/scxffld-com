@@ -43,3 +43,5 @@ export default function ProseMirrorEditor() {
 
   return <div ref={editorRef} className={styles.editor} />
 }
+  /* Added by bounty-bot */
+}
