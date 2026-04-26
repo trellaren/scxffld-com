@@ -6,8 +6,36 @@
   overflow: hidden;
 }
 
-.workspace {
+.body {
+  display: flex;
   flex: 1;
   overflow: hidden;
   min-height: 0;
+}
+
+.mainArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidePanelWrapper {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.workspace {
+  height: 100%;
+  overflow: hidden;
+}
+
+.resizeHandle {
+  width: 4px;
+  background-color: #3c3c3c;
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.resizeHandle:hover,
+.resizeHandle[data-resize-handle-active] {
+  background-color: #007acc;
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
-import { addPanel } from '../../store/workspaceSlice'
+import { addPanel, toggleSidebar } from '../../store/workspaceSlice'
 import type { PanelType } from '../../store/workspaceSlice'
 import styles from './Header.module.css'
 
@@ -88,7 +88,13 @@ export default function Header() {
             </button>
             {activeMenu === 'view' && (
               <ul className={styles.dropdown}>
-                <li className={styles.dropdownItem} onClick={closeAll}>
+                <li
+                  className={styles.dropdownItem}
+                  onClick={() => {
+                    dispatch(toggleSidebar())
+                    closeAll()
+                  }}
+                >
                   Toggle Sidebar
                 </li>
                 <li className={styles.dropdownItem} onClick={closeAll}>
@@ -96,6 +102,64 @@ export default function Header() {
                 </li>
                 <li className={styles.dropdownItem} onClick={closeAll}>
                   Zoom Out
+                </li>
+              </ul>
+            )}
+          </div>
+
+          {/* Edit menu */}
+          <div className={styles.menuWrapper}>
+            <button
+              className={`${styles.menuButton} ${activeMenu === 'edit' ? styles.menuButtonActive : ''}`}
+              onClick={() => openMenu('edit')}
+            >
+              Edit
+            </button>
+            {activeMenu === 'edit' && (
+              <ul className={styles.dropdown}>
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Undo
+                </li>
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Redo
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Cut
+                </li>
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Copy
+                </li>
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Paste
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Select All
+                </li>
+              </ul>
+            )}
+          </div>
+
+          {/* Help menu */}
+          <div className={styles.menuWrapper}>
+            <button
+              className={`${styles.menuButton} ${activeMenu === 'help' ? styles.menuButtonActive : ''}`}
+              onClick={() => openMenu('help')}
+            >
+              Help
+            </button>
+            {activeMenu === 'help' && (
+              <ul className={styles.dropdown}>
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Documentation
+                </li>
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  Keyboard Shortcuts
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={closeAll}>
+                  About scxffld
                 </li>
               </ul>
             )}

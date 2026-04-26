@@ -8,9 +8,13 @@ export interface Panel {
   title: string
 }
 
+export type SidebarView = 'explorer' | 'search'
+
 export interface WorkspaceState {
   panels: Panel[]
   activePanelId: string | null
+  sidebarOpen: boolean
+  activeSidebarView: SidebarView
 }
 
 const initialState: WorkspaceState = {
@@ -19,6 +23,8 @@ const initialState: WorkspaceState = {
     { id: 'panel-2', type: 'diagram', title: 'Diagram 1' },
   ],
   activePanelId: 'panel-1',
+  sidebarOpen: true,
+  activeSidebarView: 'explorer',
 }
 
 const workspaceSlice = createSlice({
@@ -27,6 +33,13 @@ const workspaceSlice = createSlice({
   reducers: {
     setActivePanel(state, action: PayloadAction<string>) {
       state.activePanelId = action.payload
+    },
+    toggleSidebar(state) {
+      state.sidebarOpen = !state.sidebarOpen
+    },
+    setSidebarView(state, action: PayloadAction<SidebarView>) {
+      state.activeSidebarView = action.payload
+      state.sidebarOpen = true
     },
     addPanel(state, action: PayloadAction<Panel>) {
       state.panels.push(action.payload)
@@ -46,5 +59,5 @@ const workspaceSlice = createSlice({
   },
 })
 
-export const { setActivePanel, addPanel, removePanel, updatePanelType } = workspaceSlice.actions
+export const { setActivePanel, toggleSidebar, setSidebarView, addPanel, removePanel, updatePanelType } = workspaceSlice.actions
 export default workspaceSlice.reducer

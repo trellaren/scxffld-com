@@ -1,0 +1,68 @@
+.sidePanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #252526;
+  border-right: 1px solid #3c3c3c;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 8px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #bbbbbb;
+  flex-shrink: 0;
+  user-select: none;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.headerActions {
+  display: flex;
+  gap: 4px;
+}
+
+.headerAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 14px;
+  transition: color 0.1s, background-color 0.1s;
+}
+
+.headerAction:hover {
+  color: #cccccc;
+  background-color: #3c3c3c;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background-color: #424242;
+  border-radius: 3px;
+}
