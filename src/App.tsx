@@ -1,7 +1,25 @@
+import { useSelector } from 'react-redux'
+import { RootState } from './store'
 import WorkspaceLayout from './components/Layout/WorkspaceLayout'
+import Header from './components/Header/Header'
+import LoginPage from './components/Auth/LoginPage'
+import styles from './App.module.css'
 
 function App() {
-  return <WorkspaceLayout />
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
+
+  if (!isAuthenticated) {
+    return <LoginPage />
+  }
+
+  return (
+    <div className={styles.appShell}>
+      <Header />
+      <main className={styles.workspace}>
+        <WorkspaceLayout />
+      </main>
+    </div>
+  )
 }
 
 export default App
