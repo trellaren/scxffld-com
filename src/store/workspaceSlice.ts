@@ -14,11 +14,18 @@ export interface Panel {
   activeTabId: string | null
 }
 
+export interface FileEntry {
+  name: string
+  path: string
+}
+
 export interface WorkspaceState {
   panels: Panel[]
   activePanelId: string | null
   sidebarOpen: boolean
   splitDirection: 'horizontal' | 'vertical'
+  openFolderName: string | null
+  openFolderFiles: FileEntry[]
 }
 
 const initialState: WorkspaceState = {
@@ -35,6 +42,8 @@ const initialState: WorkspaceState = {
   activePanelId: 'panel-1',
   sidebarOpen: true,
   splitDirection: 'horizontal',
+  openFolderName: null,
+  openFolderFiles: [],
 }
 
 const workspaceSlice = createSlice({
@@ -86,6 +95,14 @@ const workspaceSlice = createSlice({
     setSplitDirection(state, action: PayloadAction<'horizontal' | 'vertical'>) {
       state.splitDirection = action.payload
     },
+    openFolder(state, action: PayloadAction<{ name: string; files: FileEntry[] }>) {
+      state.openFolderName = action.payload.name
+      state.openFolderFiles = action.payload.files
+    },
+    closeFolder(state) {
+      state.openFolderName = null
+      state.openFolderFiles = []
+    },
   },
 })
 
@@ -98,5 +115,7 @@ export const {
   removeTab,
   toggleSidebar,
   setSplitDirection,
+  openFolder,
+  closeFolder,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer

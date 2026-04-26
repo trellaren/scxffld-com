@@ -1,22 +1,30 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
-import { addPanel, addTab, toggleSidebar, setSplitDirection } from '../../store/workspaceSlice'
-import type { PanelType } from '../../store/workspaceSlice'
+import {
+  addPanel,
+  addTab,
+  toggleSidebar,
+  setSplitDirection,
+  openFolder,
+  closeFolder,
+} from '../../store/workspaceSlice'
+import type { PanelType, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
+import { generateId } from '../../utils'
 import styles from './Header.module.css'
-
-function generateId(prefix = 'id') {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-}
 
 export default function Header() {
   const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.auth.user)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
+  const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const folderInputRef = useRef<HTMLInputElement>(null)
 
   function openMenu(name: string) {
     setActiveMenu((prev) => (prev === name ? null : name))
@@ -28,13 +36,14 @@ export default function Header() {
     setUserMenuOpen(false)
   }
 
-  function handleNewTab(type: PanelType) {
-    const title = type === 'editor' ? 'New Document' : type === 'diagram' ? 'New Diagram' : 'Panel'
+  function handleNewTab(type: PanelType, title?: string) {
+    const defaultTitle = type === 'editor' ? 'New Text File' : type === 'diagram' ? 'New Diagram' : 'Panel'
+    const tabTitle = title ?? defaultTitle
     if (activePanelId) {
       dispatch(
         addTab({
           panelId: activePanelId,
-          tab: { id: generateId('tab'), type, title },
+          tab: { id: generateId('tab'), type, title: tabTitle },
         }),
       )
     } else {
@@ -42,11 +51,56 @@ export default function Header() {
       dispatch(
         addPanel({
           id: generateId('panel'),
-          tabs: [{ id: tabId, type, title }],
+          tabs: [{ id: tabId, type, title: tabTitle }],
           activeTabId: tabId,
         }),
       )
     }
+    closeAll()
+  }
+
+  function handleNewWindow() {
+    window.open(window.location.href, '_blank')
+    closeAll()
+  }
+
+  function handleOpenFile() {
+    closeAll()
+    fileInputRef.current?.click()
+  }
+
+  function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    handleNewTab('editor', file.name)
+    e.target.value = ''
+  }
+
+  function handleOpenFolder() {
+    closeAll()
+    folderInputRef.current?.click()
+  }
+
+  function handleFolderInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
+    const folderName = firstPath ? firstPath.split('/')[0] : 'Folder'
+    const entries: FileEntry[] = Array.from(files).map((f) => {
+      const relativePath = (f as File & { webkitRelativePath: string }).webkitRelativePath
+      return { name: f.name, path: relativePath || f.name }
+    })
+    dispatch(openFolder({ name: folderName, files: entries }))
+    e.target.value = ''
+  }
+
+  function handleCloseFolder() {
+    dispatch(closeFolder())
+    closeAll()
+  }
+
+  function handleCloseWindow() {
+    window.close()
     closeAll()
   }
 
@@ -88,6 +142,25 @@ export default function Header() {
         <div className={styles.overlay} onClick={closeAll} />
       )}
 
+      {/* Hidden file inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        style={{ display: 'none' }}
+        onChange={handleFileInputChange}
+      />
+      {/* webkitdirectory is supported in all major browsers (Chrome, Firefox 50+, Safari, Edge).
+          The @ts-expect-error below suppresses React's missing typedef for this attribute. */}
+      <input
+        ref={folderInputRef}
+        type="file"
+        style={{ display: 'none' }}
+        // @ts-expect-error – webkitdirectory is not in React's HTML typedefs but is widely supported
+        webkitdirectory=""
+        multiple
+        onChange={handleFolderInputChange}
+      />
+
       <header className={styles.header}>
         {/* App name / logo */}
         <div className={styles.appName}>scxffld</div>
@@ -105,16 +178,45 @@ export default function Header() {
             {activeMenu === 'file' && (
               <ul className={styles.dropdown}>
                 <li className={styles.dropdownItem} onClick={() => handleNewTab('editor')}>
-                  New Document
+                  New Text File
                 </li>
                 <li className={styles.dropdownItem} onClick={() => handleNewTab('diagram')}>
                   New Diagram
                 </li>
-                <li className={styles.dropdownItem} onClick={handleSplitRight}>
-                  Split Right
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={handleNewWindow}>
+                  New Window
                 </li>
-                <li className={styles.dropdownItem} onClick={handleSplitDown}>
-                  Split Down
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={handleOpenFile}>
+                  Open File
+                </li>
+                <li className={styles.dropdownItem} onClick={handleOpenFolder}>
+                  Open Folder
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItemDisabled}>
+                  Save
+                </li>
+                <li className={styles.dropdownItemDisabled}>
+                  Save As
+                </li>
+                <li className={styles.dropdownItemDisabled}>
+                  Save All
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li
+                  className={openFolderName ? styles.dropdownItem : styles.dropdownItemDisabled}
+                  onClick={openFolderName ? handleCloseFolder : undefined}
+                >
+                  Close Folder
+                </li>
+                <li className={styles.dropdownItem} onClick={handleCloseWindow}>
+                  Close Window
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={() => handleNewTab('empty', 'Settings')}>
+                  Settings
                 </li>
               </ul>
             )}
@@ -136,10 +238,18 @@ export default function Header() {
                 <li className={styles.dropdownItem} onClick={() => { dispatch(toggleTimeline()); closeAll() }}>
                   Toggle Timeline
                 </li>
-                <li className={styles.dropdownItem} onClick={closeAll}>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={handleSplitRight}>
+                  Split Right
+                </li>
+                <li className={styles.dropdownItem} onClick={handleSplitDown}>
+                  Split Down
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItemDisabled}>
                   Zoom In
                 </li>
-                <li className={styles.dropdownItem} onClick={closeAll}>
+                <li className={styles.dropdownItemDisabled}>
                   Zoom Out
                 </li>
               </ul>
