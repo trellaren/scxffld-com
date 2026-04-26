@@ -52,3 +52,9 @@ release/
 *.exe
 *.dmg
 *.zip
+
+# TypeScript
+*.js.map
+*.d.ts.map
+tsconfig.tsbuildinfo
+.tsbuildinfo

@@ -1,0 +1,50 @@
+.layout {
+  height: 100%;
+  width: 100%;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  cursor: pointer;
+}
+
+.activePanel {
+  border-color: #007acc;
+}
+
+.panelHeader {
+  background-color: #1e1e1e;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #3c3c3c;
+  user-select: none;
+}
+
+.panelBody {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.emptyPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c6c6c;
+  font-size: 14px;
+}
+
+.resizeHandle {
+  width: 4px;
+  background-color: #3c3c3c;
+  transition: background-color 0.15s;
+}
+
+.resizeHandle:hover,
+.resizeHandle[data-resize-handle-state='drag'] {
+  background-color: #007acc;
+}
