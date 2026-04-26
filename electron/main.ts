@@ -2,6 +2,7 @@ import {
   app,
   BrowserWindow,
   globalShortcut,
+  ipcMain,
   Menu,
   type MenuItemConstructorOptions,
 } from "electron";
@@ -46,12 +47,29 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
     },
     backgroundColor: "#1e1e1e",
-    titleBarStyle: "hiddenInset",
+  });
+
+  ipcMain.on("window:minimize", () => win.minimize());
+  ipcMain.on("window:maximize", () => {
+    if (win.isMaximized()) {
+      win.unmaximize();
+    } else {
+      win.maximize();
+    }
+  });
+  ipcMain.on("window:close", () => win.close());
+
+  win.on("closed", () => {
+    ipcMain.removeAllListeners("window:minimize");
+    ipcMain.removeAllListeners("window:maximize");
+    ipcMain.removeAllListeners("window:close");
   });
 
   if (isDev) {

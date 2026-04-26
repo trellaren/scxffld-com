@@ -286,6 +286,36 @@ export default function Header() {
             )}
           </div>
         </div>
+
+        {/* Window controls (Electron only) */}
+        {window.electronAPI && (
+          <div className={styles.windowControls}>
+            <button
+              className={styles.windowControlButton}
+              onClick={() => window.electronAPI!.minimizeWindow()}
+              aria-label="Minimize"
+              title="Minimize"
+            >
+              &#x2013;
+            </button>
+            <button
+              className={styles.windowControlButton}
+              onClick={() => window.electronAPI!.maximizeWindow()}
+              aria-label="Maximize"
+              title="Maximize"
+            >
+              &#x2610;
+            </button>
+            <button
+              className={`${styles.windowControlButton} ${styles.windowControlClose}`}
+              onClick={() => window.electronAPI!.closeWindow()}
+              aria-label="Close"
+              title="Close"
+            >
+              &#x2715;
+            </button>
+          </div>
+        )}
       </header>
     </>
   )
