@@ -1,7 +1,47 @@
-import { app, BrowserWindow } from 'electron'
-import path from 'path'
+import {
+  app,
+  BrowserWindow,
+  globalShortcut,
+  Menu,
+  type MenuItemConstructorOptions,
+} from "electron";
+import path from "path";
 
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = !app.isPackaged;
+
+function toggleFocusedWindowDevTools() {
+  BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools();
+}
+
+function createAppMenu() {
+  const template: MenuItemConstructorOptions[] = [
+    ...(process.platform === "darwin"
+      ? [
+          {
+            label: app.name,
+            submenu: [
+              { role: "about" },
+              { type: "separator" },
+              { role: "quit" },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: "View",
+      submenu: [
+        {
+          label: "Toggle Developer Tools",
+          accelerator:
+            process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
+          click: toggleFocusedWindowDevTools,
+        },
+      ],
+    },
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -13,24 +53,34 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
     },
-    backgroundColor: '#1e1e1e',
-    titleBarStyle: 'hiddenInset',
-  })
+    backgroundColor: "#1e1e1e",
+    titleBarStyle: "hiddenInset",
+  });
 
   if (isDev) {
-    win.loadURL('http://localhost:5173')
-    win.webContents.openDevTools()
+    win.loadURL("http://localhost:5183");
   } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html'))
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  if (isDev) {
+    createAppMenu();
+    globalShortcut.register("F12", toggleFocusedWindowDevTools);
+  }
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+  createWindow();
+});
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow()
-})
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});
+
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
+});
