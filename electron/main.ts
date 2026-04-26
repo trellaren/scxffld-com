@@ -14,31 +14,28 @@ function toggleFocusedWindowDevTools() {
 }
 
 function createAppMenu() {
-  const template: MenuItemConstructorOptions[] = [
-    ...(process.platform === "darwin"
-      ? [
-          {
-            label: app.name,
-            submenu: [
-              { role: "about" },
-              { type: "separator" },
-              { role: "quit" },
-            ],
-          },
-        ]
-      : []),
-    {
-      label: "View",
-      submenu: [
-        {
-          label: "Toggle Developer Tools",
-          accelerator:
-            process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
-          click: toggleFocusedWindowDevTools,
-        },
-      ],
-    },
-  ];
+  const template: MenuItemConstructorOptions[] = [];
+
+  if (process.platform === "darwin") {
+    const appMenu: MenuItemConstructorOptions = {
+      label: app.name,
+      submenu: [{ role: "about" }, { type: "separator" }, { role: "quit" }],
+    };
+    template.push(appMenu);
+  }
+
+  const viewMenu: MenuItemConstructorOptions = {
+    label: "View",
+    submenu: [
+      {
+        label: "Toggle Developer Tools",
+        accelerator:
+          process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
+        click: toggleFocusedWindowDevTools,
+      },
+    ],
+  };
+  template.push(viewMenu);
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
