@@ -4,6 +4,7 @@ import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
 import { addPanel, toggleSidebar } from '../../store/workspaceSlice'
 import type { PanelType } from '../../store/workspaceSlice'
+import { toggleTimeline } from '../../store/timelineSlice'
 import styles from './Header.module.css'
 
 function generateId() {
@@ -90,6 +91,9 @@ export default function Header() {
               <ul className={styles.dropdown}>
                 <li className={styles.dropdownItem} onClick={() => { dispatch(toggleSidebar()); closeAll() }}>
                   Toggle Sidebar
+                </li>
+                <li className={styles.dropdownItem} onClick={() => { dispatch(toggleTimeline()); closeAll() }}>
+                  Toggle Timeline
                 </li>
                 <li className={styles.dropdownItem} onClick={closeAll}>
                   Zoom In

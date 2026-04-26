@@ -1,0 +1,279 @@
+.timelineMenuContainer {
+  flex-shrink: 0;
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #3c3c3c;
+  user-select: none;
+}
+
+/* Collapse/expand toggle bar */
+.toggleBar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #bbbbbb;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  cursor: pointer;
+  text-align: left;
+  gap: 4px;
+  height: 26px;
+  transition: background-color 0.1s;
+}
+
+.toggleBar:hover {
+  background-color: #2a2a2a;
+  color: #cccccc;
+}
+
+.chevron {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.15s ease;
+  color: #888;
+  width: 14px;
+  text-align: center;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.label {
+  flex: 1;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007acc;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+}
+
+/* Expanded area */
+.timelineContent {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* Horizontal scrollable event track */
+.track {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 0;
+  padding-bottom: 4px;
+  min-height: 60px;
+  scrollbar-width: thin;
+  scrollbar-color: #3c3c3c #1e1e1e;
+}
+
+.track::-webkit-scrollbar {
+  height: 4px;
+}
+.track::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+.track::-webkit-scrollbar-thumb {
+  background: #3c3c3c;
+  border-radius: 2px;
+}
+
+.emptyHint {
+  color: #555;
+  font-size: 12px;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Wrapper for each event + connector */
+.eventWrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Connector line between events */
+.connector {
+  width: 24px;
+  height: 2px;
+  background-color: #3c3c3c;
+  flex-shrink: 0;
+}
+
+/* Clickable event card / window */
+.eventCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  border-top-width: 3px;
+  border-radius: 4px;
+  padding: 6px 24px 6px 8px;
+  cursor: pointer;
+  min-width: 110px;
+  max-width: 160px;
+  text-align: left;
+  gap: 2px;
+  transition: background-color 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+
+.eventCard:hover {
+  background-color: #2d2d2d;
+  border-color: #555;
+}
+
+.eventCardSelected {
+  background-color: #094771;
+  border-color: #007acc !important;
+}
+
+.eventDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+
+.eventTitle {
+  font-size: 12px;
+  color: #cccccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  font-weight: 500;
+}
+
+.eventDate {
+  font-size: 10px;
+  color: #777;
+  white-space: nowrap;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  border-radius: 2px;
+  transition: color 0.1s;
+}
+
+.removeBtn:hover {
+  color: #cc3333;
+}
+
+/* Inline add form */
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  background-color: #252526;
+  border: 1px solid #007acc;
+  border-radius: 4px;
+  padding: 6px 8px;
+  flex-shrink: 0;
+}
+
+.addInput {
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 3px;
+  color: #cccccc;
+  font-size: 12px;
+  padding: 3px 6px;
+  outline: none;
+  width: 100%;
+}
+
+.addInput:focus {
+  border-color: #007acc;
+}
+
+.addFormActions {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.addConfirmBtn {
+  flex: 1;
+  background-color: #007acc;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  font-size: 11px;
+  padding: 3px 6px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.addConfirmBtn:hover {
+  background-color: #005f9e;
+}
+
+.addCancelBtn {
+  flex: 1;
+  background: none;
+  color: #888;
+  border: 1px solid #3c3c3c;
+  border-radius: 3px;
+  font-size: 11px;
+  padding: 3px 6px;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.addCancelBtn:hover {
+  color: #cccccc;
+}
+
+/* Add Event button */
+.addEventBtn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid #3c3c3c;
+  color: #888;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+  height: 28px;
+}
+
+.addEventBtn:hover {
+  background-color: #2d2d2d;
+  color: #cccccc;
+  border-color: #007acc;
+}
