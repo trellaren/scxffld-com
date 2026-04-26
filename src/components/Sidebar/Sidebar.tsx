@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel } from '../../store/workspaceSlice'
-import type { Panel } from '../../store/workspaceSlice'
+import { setActiveTab } from '../../store/workspaceSlice'
+import type { Tab } from '../../store/workspaceSlice'
 import styles from './Sidebar.module.css'
 
-function fileIcon(type: Panel['type']) {
+function fileIcon(type: Tab['type']) {
   switch (type) {
     case 'editor':
       return '📄'
@@ -21,6 +21,8 @@ export default function Sidebar() {
   const panels = useSelector((state: RootState) => state.workspace.panels)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const [projectExpanded, setProjectExpanded] = useState(true)
+
+  const activePanel = panels.find((p) => p.id === activePanelId)
 
   return (
     <div className={styles.sidebar}>
@@ -38,17 +40,23 @@ export default function Sidebar() {
 
         {projectExpanded && (
           <ul className={styles.fileList}>
-            {panels.map((panel) => (
-              <li
-                key={panel.id}
-                className={`${styles.fileItem} ${activePanelId === panel.id ? styles.fileItemActive : ''}`}
-                onClick={() => dispatch(setActivePanel(panel.id))}
-                title={panel.title}
-              >
-                <span className={styles.fileIcon}>{fileIcon(panel.type)}</span>
-                <span className={styles.fileName}>{panel.title}</span>
-              </li>
-            ))}
+            {panels.map((panel) =>
+              panel.tabs.map((tab) => {
+                const isActive =
+                  panel.id === activePanelId && tab.id === activePanel?.activeTabId
+                return (
+                  <li
+                    key={`${panel.id}-${tab.id}`}
+                    className={`${styles.fileItem} ${isActive ? styles.fileItemActive : ''}`}
+                    onClick={() => dispatch(setActiveTab({ panelId: panel.id, tabId: tab.id }))}
+                    title={tab.title}
+                  >
+                    <span className={styles.fileIcon}>{fileIcon(tab.type)}</span>
+                    <span className={styles.fileName}>{tab.title}</span>
+                  </li>
+                )
+              }),
+            )}
           </ul>
         )}
       </div>

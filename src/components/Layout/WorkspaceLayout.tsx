@@ -2,20 +2,59 @@ import React from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel } from '../../store/workspaceSlice'
+import { setActivePanel, setActiveTab, removeTab } from '../../store/workspaceSlice'
+import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
 import Sidebar from '../Sidebar/Sidebar'
 import styles from './WorkspaceLayout.module.css'
 
-function PanelContent({ panelId }: { panelId: string }) {
-  const panel = useSelector((state: RootState) =>
-    state.workspace.panels.find((p) => p.id === panelId),
+function TabBar({ panel }: { panel: WorkspacePanel }) {
+  const dispatch = useDispatch()
+  const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
+  const isActivePanel = activePanelId === panel.id
+
+  return (
+    <div className={styles.tabBar}>
+      {panel.tabs.map((tab) => (
+        <div
+          key={tab.id}
+          className={`${styles.tab} ${isActivePanel && panel.activeTabId === tab.id ? styles.activeTab : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            dispatch(setActiveTab({ panelId: panel.id, tabId: tab.id }))
+          }}
+          title={tab.title}
+        >
+          <span className={styles.tabTitle}>{tab.title}</span>
+          <button
+            className={styles.tabClose}
+            onClick={(e) => {
+              e.stopPropagation()
+              dispatch(removeTab({ panelId: panel.id, tabId: tab.id }))
+            }}
+            aria-label={`Close ${tab.title}`}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+    </div>
   )
+}
 
-  if (!panel) return null
+function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
+  const activeTab = panel.tabs.find((t) => t.id === panel.activeTabId)
 
-  switch (panel.type) {
+  if (!activeTab) {
+    return (
+      <div className={styles.emptyPanel}>
+        <span>No open documents</span>
+      </div>
+    )
+  }
+
+  switch (activeTab.type) {
     case 'editor':
       return <ProseMirrorEditor />
     case 'diagram':
@@ -53,11 +92,9 @@ export default function WorkspaceLayout() {
             className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
             onClick={() => dispatch(setActivePanel(panel.id))}
           >
-            <div className={styles.panelHeader}>
-              <span>{panel.title}</span>
-            </div>
+            <TabBar panel={panel} />
             <div className={styles.panelBody}>
-              <PanelContent panelId={panel.id} />
+              <ActiveTabContent panel={panel} />
             </div>
           </Panel>
           {index < panels.length - 1 && (
