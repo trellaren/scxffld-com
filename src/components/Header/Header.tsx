@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
-import { addPanel } from '../../store/workspaceSlice'
+import { addPanel, toggleSidebar } from '../../store/workspaceSlice'
 import type { PanelType } from '../../store/workspaceSlice'
 import styles from './Header.module.css'
 
@@ -88,7 +88,7 @@ export default function Header() {
             </button>
             {activeMenu === 'view' && (
               <ul className={styles.dropdown}>
-                <li className={styles.dropdownItem} onClick={closeAll}>
+                <li className={styles.dropdownItem} onClick={() => { dispatch(toggleSidebar()); closeAll() }}>
                   Toggle Sidebar
                 </li>
                 <li className={styles.dropdownItem} onClick={closeAll}>

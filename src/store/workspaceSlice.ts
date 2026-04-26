@@ -11,6 +11,7 @@ export interface Panel {
 export interface WorkspaceState {
   panels: Panel[]
   activePanelId: string | null
+  sidebarOpen: boolean
 }
 
 const initialState: WorkspaceState = {
@@ -19,6 +20,7 @@ const initialState: WorkspaceState = {
     { id: 'panel-2', type: 'diagram', title: 'Diagram 1' },
   ],
   activePanelId: 'panel-1',
+  sidebarOpen: true,
 }
 
 const workspaceSlice = createSlice({
@@ -43,8 +45,11 @@ const workspaceSlice = createSlice({
         panel.type = action.payload.type
       }
     },
+    toggleSidebar(state) {
+      state.sidebarOpen = !state.sidebarOpen
+    },
   },
 })
 
-export const { setActivePanel, addPanel, removePanel, updatePanelType } = workspaceSlice.actions
+export const { setActivePanel, addPanel, removePanel, updatePanelType, toggleSidebar } = workspaceSlice.actions
 export default workspaceSlice.reducer

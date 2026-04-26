@@ -5,6 +5,7 @@ import { RootState } from '../../store'
 import { setActivePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
+import Sidebar from '../Sidebar/Sidebar'
 import styles from './WorkspaceLayout.module.css'
 
 function PanelContent({ panelId }: { panelId: string }) {
@@ -31,14 +32,23 @@ function PanelContent({ panelId }: { panelId: string }) {
 export default function WorkspaceLayout() {
   const panels = useSelector((state: RootState) => state.workspace.panels)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
+  const sidebarOpen = useSelector((state: RootState) => state.workspace.sidebarOpen)
   const dispatch = useDispatch()
 
   return (
     <PanelGroup direction="horizontal" className={styles.layout}>
+      {sidebarOpen && (
+        <>
+          <Panel defaultSize={18} minSize={12} maxSize={40} className={styles.sidebarPanel}>
+            <Sidebar />
+          </Panel>
+          <PanelResizeHandle className={styles.resizeHandle} />
+        </>
+      )}
       {panels.map((panel, index) => (
         <React.Fragment key={panel.id}>
           <Panel
-            defaultSize={100 / panels.length}
+            defaultSize={sidebarOpen ? (82 / panels.length) : (100 / panels.length)}
             minSize={10}
             className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
             onClick={() => dispatch(setActivePanel(panel.id))}
