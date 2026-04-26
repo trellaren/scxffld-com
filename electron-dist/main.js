@@ -37,12 +37,28 @@ function createWindow() {
         height: 800,
         minWidth: 800,
         minHeight: 600,
+        frame: false,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            preload: path_1.default.join(__dirname, "preload.js"),
         },
         backgroundColor: "#1e1e1e",
-        titleBarStyle: "hiddenInset",
+    });
+    electron_1.ipcMain.on("window:minimize", () => win.minimize());
+    electron_1.ipcMain.on("window:maximize", () => {
+        if (win.isMaximized()) {
+            win.unmaximize();
+        }
+        else {
+            win.maximize();
+        }
+    });
+    electron_1.ipcMain.on("window:close", () => win.close());
+    win.on("closed", () => {
+        electron_1.ipcMain.removeAllListeners("window:minimize");
+        electron_1.ipcMain.removeAllListeners("window:maximize");
+        electron_1.ipcMain.removeAllListeners("window:close");
     });
     if (isDev) {
         win.loadURL("http://localhost:5183");
