@@ -1,0 +1,107 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #252526;
+  border-right: 1px solid #3c3c3c;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+  user-select: none;
+}
+
+.sidebarTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #bbbbbb;
+  letter-spacing: 0.08em;
+  padding: 10px 12px 6px;
+  flex-shrink: 0;
+}
+
+.section {
+  flex-shrink: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #cccccc;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  cursor: pointer;
+  text-align: left;
+  gap: 4px;
+  text-transform: uppercase;
+  transition: background-color 0.1s;
+}
+
+.sectionHeader:hover {
+  background-color: #2a2d2e;
+}
+
+.chevron {
+  display: inline-block;
+  font-size: 14px;
+  color: #cccccc;
+  transition: transform 0.15s;
+  transform: rotate(0deg);
+  line-height: 1;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.sectionLabel {
+  flex: 1;
+}
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 20px;
+  font-size: 13px;
+  color: #cccccc;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.1s;
+}
+
+.fileItem:hover {
+  background-color: #2a2d2e;
+}
+
+.fileItemActive {
+  background-color: #094771;
+  color: #ffffff;
+}
+
+.fileItemActive:hover {
+  background-color: #094771;
+}
+
+.fileIcon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.fileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

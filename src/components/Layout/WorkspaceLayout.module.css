@@ -3,6 +3,12 @@
   width: 100%;
 }
 
+.sidebarPanel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .panel {
   display: flex;
   flex-direction: column;
