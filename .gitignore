@@ -45,6 +45,7 @@ dist/
 out/
 app/dist/
 release/
+electron-dist/
 *.AppImage
 *.deb
 *.rpm
