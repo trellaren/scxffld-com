@@ -18,6 +18,7 @@ export interface WorkspaceState {
   panels: Panel[]
   activePanelId: string | null
   sidebarOpen: boolean
+  splitDirection: 'horizontal' | 'vertical'
 }
 
 const initialState: WorkspaceState = {
@@ -33,6 +34,7 @@ const initialState: WorkspaceState = {
   ],
   activePanelId: 'panel-1',
   sidebarOpen: true,
+  splitDirection: 'horizontal',
 }
 
 const workspaceSlice = createSlice({
@@ -81,6 +83,9 @@ const workspaceSlice = createSlice({
     toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen
     },
+    setSplitDirection(state, action: PayloadAction<'horizontal' | 'vertical'>) {
+      state.splitDirection = action.payload
+    },
   },
 })
 
@@ -92,5 +97,6 @@ export const {
   addTab,
   removeTab,
   toggleSidebar,
+  setSplitDirection,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer

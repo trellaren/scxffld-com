@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
-import { addPanel, addTab, toggleSidebar } from '../../store/workspaceSlice'
+import { addPanel, addTab, toggleSidebar, setSplitDirection } from '../../store/workspaceSlice'
 import type { PanelType } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
 import styles from './Header.module.css'
@@ -50,8 +50,22 @@ export default function Header() {
     closeAll()
   }
 
-  function handleNewSplit() {
+  function handleSplitRight() {
     const tabId = generateId('tab')
+    dispatch(setSplitDirection('horizontal'))
+    dispatch(
+      addPanel({
+        id: generateId('panel'),
+        tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
+        activeTabId: tabId,
+      }),
+    )
+    closeAll()
+  }
+
+  function handleSplitDown() {
+    const tabId = generateId('tab')
+    dispatch(setSplitDirection('vertical'))
     dispatch(
       addPanel({
         id: generateId('panel'),
@@ -96,8 +110,11 @@ export default function Header() {
                 <li className={styles.dropdownItem} onClick={() => handleNewTab('diagram')}>
                   New Diagram
                 </li>
-                <li className={styles.dropdownItem} onClick={handleNewSplit}>
-                  New Split
+                <li className={styles.dropdownItem} onClick={handleSplitRight}>
+                  Split Right
+                </li>
+                <li className={styles.dropdownItem} onClick={handleSplitDown}>
+                  Split Down
                 </li>
               </ul>
             )}
