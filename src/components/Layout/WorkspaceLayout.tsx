@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel, setActiveTab, removeTab, removePanel } from '../../store/workspaceSlice'
+import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab } from '../../store/workspaceSlice'
 import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
@@ -13,6 +13,40 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
   const dispatch = useDispatch()
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const isActivePanel = activePanelId === panel.id
+
+  const [editingTabId, setEditingTabId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingTabId && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingTabId])
+
+  function handleDoubleClick(e: React.MouseEvent, tabId: string, currentTitle: string) {
+    e.stopPropagation()
+    setEditingTabId(tabId)
+    setEditingTitle(currentTitle)
+  }
+
+  function commitRename(tabId: string) {
+    const trimmed = editingTitle.trim()
+    if (trimmed) {
+      dispatch(renameTab({ panelId: panel.id, tabId, title: trimmed }))
+    }
+    setEditingTabId(null)
+  }
+
+  function handleInputKeyDown(e: React.KeyboardEvent, tabId: string) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      commitRename(tabId)
+    } else if (e.key === 'Escape') {
+      setEditingTabId(null)
+    }
+  }
 
   return (
     <div className={styles.tabBar}>
@@ -25,9 +59,26 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
               e.stopPropagation()
               dispatch(setActiveTab({ panelId: panel.id, tabId: tab.id }))
             }}
-            title={tab.title}
+            title={editingTabId === tab.id ? undefined : tab.title}
           >
-            <span className={styles.tabTitle}>{tab.title}</span>
+            {editingTabId === tab.id ? (
+              <input
+                ref={inputRef}
+                className={styles.tabTitleInput}
+                value={editingTitle}
+                onChange={(e) => setEditingTitle(e.target.value)}
+                onBlur={() => commitRename(tab.id)}
+                onKeyDown={(e) => handleInputKeyDown(e, tab.id)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span
+                className={styles.tabTitle}
+                onDoubleClick={(e) => handleDoubleClick(e, tab.id, tab.title)}
+              >
+                {tab.title}
+              </span>
+            )}
             <button
               className={styles.tabClose}
               onClick={(e) => {
