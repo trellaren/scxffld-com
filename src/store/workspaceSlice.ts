@@ -78,6 +78,15 @@ const workspaceSlice = createSlice({
       }
       state.activePanelId = action.payload.panelId
     },
+    renameTab(state, action: PayloadAction<{ panelId: string; tabId: string; title: string }>) {
+      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      if (panel) {
+        const tab = panel.tabs.find((t) => t.id === action.payload.tabId)
+        if (tab) {
+          tab.title = action.payload.title
+        }
+      }
+    },
     removeTab(state, action: PayloadAction<{ panelId: string; tabId: string }>) {
       const panel = state.panels.find((p) => p.id === action.payload.panelId)
       if (panel) {
@@ -113,6 +122,7 @@ export const {
   removePanel,
   addTab,
   removeTab,
+  renameTab,
   toggleSidebar,
   setSplitDirection,
   openFolder,
