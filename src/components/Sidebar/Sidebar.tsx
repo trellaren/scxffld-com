@@ -51,10 +51,13 @@ type RenamingState =
 
 export default function Sidebar() {
   const dispatch = useDispatch()
-  const panels = useSelector((state: RootState) => state.workspace.panels)
+  const rows = useSelector((state: RootState) => state.workspace.rows)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
   const openFolderFiles = useSelector((state: RootState) => state.workspace.openFolderFiles)
+
+  // Derive flat panels list from rows
+  const panels = rows.flatMap((row) => row.panels)
 
   const [projectExpanded, setProjectExpanded] = useState(true)
   const [folderExpanded, setFolderExpanded] = useState(true)
