@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { setSelectedModel } from '../../store/aiSlice'
+import { openSettings } from '../../store/settingsSlice'
 import { addPanel, addTab } from '../../store/workspaceSlice'
 import { generateId } from '../../utils'
 import { loadModel, unloadModel } from '../../services/aiApi'
@@ -26,7 +27,14 @@ export default function AiPrompt() {
       ? `${displayModel}`
       : 'Select Model'
 
+  const hasAnyModels = modelConfigs.some((c) => c.models.length > 0)
+
   function handleFocus() {
+    if (!hasAnyModels) {
+      dispatch(openSettings())
+      textareaRef.current?.blur()
+      return
+    }
     setExpanded(true)
   }
 
@@ -51,6 +59,10 @@ export default function AiPrompt() {
 
   function handleSubmit() {
     if (!prompt.trim()) return
+    if (!hasAnyModels) {
+      dispatch(openSettings())
+      return
+    }
     // Open a chat tab
     const tabId = generateId('tab')
     if (activePanelId) {
@@ -130,7 +142,13 @@ export default function AiPrompt() {
           <div className={styles.modelSelectorWrapper}>
             <button
               className={styles.modelButton}
-              onClick={() => setModelDropdownOpen((prev) => !prev)}
+              onClick={() => {
+                if (!hasAnyModels) {
+                  dispatch(openSettings())
+                } else {
+                  setModelDropdownOpen((prev) => !prev)
+                }
+              }}
               title="Select AI model"
               aria-label="Select AI model"
             >
