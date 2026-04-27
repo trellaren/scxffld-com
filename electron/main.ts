@@ -185,22 +185,29 @@ app.whenReady().then(() => {
   // Apply a Content Security Policy to all web content served in the app.
   // This limits where scripts, styles, and other resources can be loaded from,
   // reducing the attack surface from any injected content.
+  //
+  // In development mode the Vite dev server injects an inline
+  // <script type="module"> (the React Fast Refresh preamble) that would be
+  // blocked by a strict script-src, causing a completely blank window.  Skip
+  // the CSP in dev so all Vite/React tooling works without restriction.
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    // In development the Vite dev server runs on localhost; allow HTTP there.
-    // In production (packaged app) only HTTPS external connections are permitted.
-    const localhostConnect = isDev
-      ? " https://localhost:* http://localhost:*"
-      : " https://localhost:*";
+    if (isDev) {
+      callback({ responseHeaders: details.responseHeaders });
+      return;
+    }
+
+    // Production: apply a strict CSP.  The app is loaded from file:// so we
+    // include the file: scheme alongside 'self' for the resource directives.
     callback({
       responseHeaders: {
         ...details.responseHeaders,
         "Content-Security-Policy": [
-          "default-src 'self';" +
-          " script-src 'self';" +
-          " style-src 'self' 'unsafe-inline';" +
-          " img-src 'self' data: blob:;" +
-          " font-src 'self' data:;" +
-          " connect-src 'self' https://api.openai.com https://api.anthropic.com" + localhostConnect + ";" +
+          "default-src 'self' file:;" +
+          " script-src 'self' file:;" +
+          " style-src 'self' 'unsafe-inline' file:;" +
+          " img-src 'self' data: blob: file:;" +
+          " font-src 'self' data: file:;" +
+          " connect-src 'self' https://api.openai.com https://api.anthropic.com https://localhost:* http://localhost:*;" +
           " frame-src 'none';" +
           " object-src 'none';"
         ],
