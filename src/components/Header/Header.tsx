@@ -14,7 +14,8 @@ import {
   loadProjectFile,
 } from '../../store/workspaceSlice'
 import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspaceSlice'
-import { toggleTimeline } from '../../store/timelineSlice'
+import { toggleTimeline, loadTimeline } from '../../store/timelineSlice'
+import type { TimelineItem } from '../../store/timelineSlice'
 import { openSettings, updateTheme, AVAILABLE_THEMES } from '../../store/settingsSlice'
 import { generateId, downloadProjectFile } from '../../utils'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
@@ -39,6 +40,7 @@ export default function Header() {
   const projectFileInputRef = useRef<HTMLInputElement>(null)
 
   const workspaceState = useSelector((state: RootState) => state.workspace)
+  const timelineItems = useSelector((state: RootState) => state.timeline.items)
 
   // Derive the active tab from the active panel
   const activePanel = panels.find((p) => p.id === activePanelId) ?? null
@@ -193,7 +195,7 @@ export default function Header() {
 
   function handleSaveProjectFile() {
     closeAll()
-    downloadProjectFile(workspaceState)
+    downloadProjectFile(workspaceState, timelineItems)
   }
 
   function handleOpenProjectFile() {
@@ -216,8 +218,20 @@ export default function Header() {
           typeof (raw as { openFolderName: unknown }).openFolderName === 'string' &&
           Array.isArray((raw as { openFolderFiles: unknown }).openFolderFiles)
         ) {
-          const data = raw as { openFolderName: string; openFolderFiles: FileEntry[] }
+          const data = raw as { openFolderName: string; openFolderFiles: FileEntry[]; timelineItems?: TimelineItem[] }
           dispatch(loadProjectFile({ openFolderName: data.openFolderName, openFolderFiles: data.openFolderFiles }))
+          if (Array.isArray(data.timelineItems)) {
+            const validItems = data.timelineItems.filter(
+              (item): item is TimelineItem =>
+                item !== null &&
+                typeof item === 'object' &&
+                typeof (item as TimelineItem).id === 'string' &&
+                typeof (item as TimelineItem).title === 'string' &&
+                typeof (item as TimelineItem).date === 'string' &&
+                ((item as TimelineItem).color === undefined || typeof (item as TimelineItem).color === 'string'),
+            )
+            dispatch(loadTimeline(validItems))
+          }
         }
       } catch {
         // ignore invalid JSON
@@ -309,7 +323,7 @@ export default function Header() {
                 >
                   Save As
                 </li>
-                <li className={styles.dropdownItemDisabled}>
+                <li className={styles.dropdownItem} onClick={handleSaveProjectFile}>
                   Save All
                 </li>
                 <li className={styles.dropdownDivider} />

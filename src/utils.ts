@@ -3,11 +3,13 @@ export function generateId(prefix = 'id') {
 }
 
 import type { WorkspaceState, FileEntry } from './store/workspaceSlice'
+import type { TimelineItem } from './store/timelineSlice'
 
-export function downloadProjectFile(state: WorkspaceState): void {
+export function downloadProjectFile(state: WorkspaceState, timelineItems: TimelineItem[]): void {
   const data = {
     openFolderName: state.openFolderName,
     openFolderFiles: state.openFolderFiles,
+    timelineItems,
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)

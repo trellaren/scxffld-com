@@ -35,9 +35,12 @@ const timelineSlice = createSlice({
       const idx = state.items.findIndex((i) => i.id === action.payload.id)
       if (idx !== -1) state.items[idx] = action.payload
     },
+    loadTimeline(state, action: PayloadAction<TimelineItem[]>) {
+      state.items = action.payload
+    },
   },
 })
 
-export const { toggleTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem } =
+export const { toggleTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, loadTimeline } =
   timelineSlice.actions
 export default timelineSlice.reducer
