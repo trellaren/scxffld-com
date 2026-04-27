@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import {
   closeSettings,
-  updateAIApi,
   updateTheme,
   addPlugin,
   updatePlugin,
@@ -29,22 +28,14 @@ import type {
 } from '../../store/settingsSlice'
 import styles from './SettingsModal.module.css'
 
-type TabId = 'aiapi' | 'plugins' | 'themes' | 'users' | 'teams' | 'repositories'
+type TabId = 'plugins' | 'themes' | 'users' | 'teams' | 'repositories'
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'aiapi', label: 'AI / API' },
   { id: 'plugins', label: 'Plugins' },
   { id: 'themes', label: 'Themes' },
   { id: 'users', label: 'Users' },
   { id: 'teams', label: 'Teams' },
   { id: 'repositories', label: 'Repositories' },
-]
-
-const AI_PROVIDERS = [
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'anthropic', label: 'Anthropic' },
-  { value: 'ollama', label: 'Ollama (local)' },
-  { value: 'custom', label: 'Custom / Self-hosted' },
 ]
 
 const REPO_TYPES: { value: RepositoryType; label: string }[] = [
@@ -114,70 +105,6 @@ function persistSettings(settings: AppSettings) {
 }
 
 // ─── Sub-tab components ───────────────────────────────────────────────────────
-
-function AIApiTab() {
-  const dispatch = useDispatch()
-  const aiApi = useSelector((state: RootState) => state.settings.settings.aiApi)
-
-  function handleChange(field: keyof typeof aiApi, value: string) {
-    dispatch(updateAIApi({ [field]: value }))
-  }
-
-  return (
-    <div className={styles.section}>
-      <div className={styles.sectionTitle}>AI / API Configuration</div>
-
-      <div className={styles.fieldRow}>
-        <label className={styles.fieldLabel}>Provider</label>
-        <select
-          className={styles.fieldSelect}
-          value={aiApi.provider}
-          onChange={(e) => handleChange('provider', e.target.value)}
-        >
-          {AI_PROVIDERS.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className={styles.fieldRow}>
-        <label className={styles.fieldLabel}>API Key</label>
-        <input
-          className={styles.fieldInput}
-          type="password"
-          autoComplete="off"
-          placeholder="sk-…"
-          value={aiApi.apiKey}
-          onChange={(e) => handleChange('apiKey', e.target.value)}
-        />
-      </div>
-
-      <div className={styles.fieldRow}>
-        <label className={styles.fieldLabel}>Base URL (optional)</label>
-        <input
-          className={styles.fieldInput}
-          type="text"
-          placeholder="https://api.openai.com/v1"
-          value={aiApi.baseUrl}
-          onChange={(e) => handleChange('baseUrl', e.target.value)}
-        />
-      </div>
-
-      <div className={styles.fieldRow}>
-        <label className={styles.fieldLabel}>Model</label>
-        <input
-          className={styles.fieldInput}
-          type="text"
-          placeholder="gpt-4"
-          value={aiApi.model}
-          onChange={(e) => handleChange('model', e.target.value)}
-        />
-      </div>
-    </div>
-  )
-}
 
 function PluginsTab() {
   const dispatch = useDispatch()
@@ -695,7 +622,7 @@ function RepositoriesTab() {
 export default function SettingsModal() {
   const dispatch = useDispatch()
   const settings = useSelector((state: RootState) => state.settings.settings)
-  const [activeTab, setActiveTab] = useState<TabId>('aiapi')
+  const [activeTab, setActiveTab] = useState<TabId>('plugins')
   const importRef = useRef<HTMLInputElement>(null)
 
   function handleClose() {
@@ -811,7 +738,6 @@ export default function SettingsModal() {
           </nav>
 
           <div className={styles.content}>
-            {activeTab === 'aiapi' && <AIApiTab />}
             {activeTab === 'plugins' && <PluginsTab />}
             {activeTab === 'themes' && <ThemesTab />}
             {activeTab === 'users' && <UsersTab />}

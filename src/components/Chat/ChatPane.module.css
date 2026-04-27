@@ -167,3 +167,98 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Model selector in chat header */
+.modelSelectorWrapper {
+  position: relative;
+}
+
+.modelButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--text-muted, #969696);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.modelButton:hover {
+  background-color: var(--bg-tertiary, #2d2d2d);
+  border-color: var(--border-color, #3c3c3c);
+  color: var(--text-primary, #cccccc);
+}
+
+.modelLabel {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.modelDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background-color: var(--bg-secondary, #252526);
+  border: 1px solid var(--border-color, #3c3c3c);
+  border-radius: 4px;
+  min-width: 180px;
+  list-style: none;
+  padding: 4px 0;
+  z-index: 400;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.modelGroup {
+  list-style: none;
+}
+
+.modelGroupLabel {
+  padding: 4px 12px 2px;
+  font-size: 10px;
+  color: var(--text-muted, #969696);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modelItem {
+  padding: 5px 12px 5px 20px;
+  font-size: 13px;
+  color: var(--text-secondary, #cccccc);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.1s;
+}
+
+.modelItem:hover {
+  background-color: var(--selection, #094771);
+  color: var(--text-primary, #ffffff);
+}
+
+.modelItemSelected {
+  color: var(--accent, #007acc);
+}
+
+.dropdownOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 390;
+}
