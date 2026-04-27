@@ -1,0 +1,146 @@
+.tree {
+  display: flex;
+  flex-direction: column;
+  background-color: #252526;
+  border-right: 1px solid #3c3c3c;
+  width: 180px;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.15s;
+  user-select: none;
+}
+
+.treeCollapsed {
+  width: 28px;
+}
+
+.toggleBtn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #3c3c3c;
+  color: #969696;
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  height: 28px;
+  flex-shrink: 0;
+  transition: background-color 0.1s, color 0.1s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.toggleBtn:hover {
+  background-color: #2d2d2d;
+  color: #cccccc;
+}
+
+.toggleIcon {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nodeList {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #252526;
+}
+
+.nodeList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nodeList::-webkit-scrollbar-track {
+  background: #252526;
+}
+
+.nodeList::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 2px;
+}
+
+.empty {
+  color: #555;
+  font-size: 11px;
+  padding: 10px 12px;
+  font-style: italic;
+}
+
+.nodeItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.nodeItem:hover {
+  background-color: #2a2a2a;
+}
+
+.nodeLabel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #cccccc;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 8px;
+  text-align: left;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.nodeLabel:hover {
+  color: #ffffff;
+}
+
+.nodeIcon {
+  flex-shrink: 0;
+  color: #569cd6;
+  font-size: 8px;
+}
+
+.nodeName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: color 0.1s, opacity 0.1s;
+}
+
+.nodeItem:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  color: #f44336;
+}

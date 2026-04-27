@@ -12,11 +12,12 @@ import {
   exportDiagramAsSvg,
   exportDiagramAsPng,
   exportDiagramAsJpeg,
+  exportDiagramAsPdf,
 } from '../../utils/exportUtils'
 import styles from './SaveAsDialog.module.css'
 
 type TextFormat = 'txt' | 'json' | 'docx' | 'doc' | 'pdf'
-type DiagramFormat = 'json' | 'svg' | 'png' | 'jpeg'
+type DiagramFormat = 'json' | 'svg' | 'png' | 'jpeg' | 'pdf'
 
 const TEXT_FORMATS: { value: TextFormat; label: string }[] = [
   { value: 'txt', label: 'Plain Text (.txt)' },
@@ -31,6 +32,7 @@ const DIAGRAM_FORMATS: { value: DiagramFormat; label: string }[] = [
   { value: 'svg', label: 'SVG Image (.svg)' },
   { value: 'png', label: 'PNG Image (.png)' },
   { value: 'jpeg', label: 'JPEG Image (.jpeg)' },
+  { value: 'pdf', label: 'PDF (.pdf)' },
 ]
 
 interface SaveAsDialogProps {
@@ -72,6 +74,9 @@ export default function SaveAsDialog({ activeTab, onClose }: SaveAsDialogProps) 
             break
           case 'jpeg':
             await exportDiagramAsJpeg(nodes, edges, name)
+            break
+          case 'pdf':
+            await exportDiagramAsPdf(nodes, edges, name)
             break
         }
       } else {

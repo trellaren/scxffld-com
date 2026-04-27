@@ -271,3 +271,20 @@ export async function exportDiagramAsJpeg(
     if (blob) downloadBlob(blob, filename)
   }, 'image/jpeg', 0.92)
 }
+
+export async function exportDiagramAsPdf(
+  nodes: unknown[],
+  edges: unknown[],
+  filename: string,
+): Promise<void> {
+  const svg = buildDiagramSvg(nodes, edges)
+  const canvas = await svgToCanvas(svg, DIAGRAM_EXPORT_WIDTH, DIAGRAM_EXPORT_HEIGHT)
+  const imgData = canvas.toDataURL('image/png')
+  const pdf = new jsPDF({
+    orientation: 'landscape',
+    unit: 'px',
+    format: [DIAGRAM_EXPORT_WIDTH, DIAGRAM_EXPORT_HEIGHT],
+  })
+  pdf.addImage(imgData, 'PNG', 0, 0, DIAGRAM_EXPORT_WIDTH, DIAGRAM_EXPORT_HEIGHT)
+  pdf.save(filename)
+}
