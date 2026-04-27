@@ -93,6 +93,10 @@ export default function Sidebar() {
     folderInputRef.current?.click()
   }
 
+  function handleOpenProject() {
+    handleOpenFolder()
+  }
+
   function handleFolderInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -183,7 +187,7 @@ export default function Sidebar() {
       { label: 'New Chat', onClick: () => openTab('chat', 'Chat') },
       'divider',
       { label: 'Create Project', onClick: () => openTab('projects', 'Projects') },
-      { label: 'Open Project', onClick: handleOpenFolder },
+      { label: 'Open Project', onClick: handleOpenProject },
       'divider',
       { label: 'AI Settings', onClick: () => openTab('settings', 'AI Settings') },
     ])

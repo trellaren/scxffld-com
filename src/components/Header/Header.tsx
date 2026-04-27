@@ -110,6 +110,10 @@ export default function Header() {
     folderInputRef.current?.click()
   }
 
+  function handleOpenProject() {
+    handleOpenFolder()
+  }
+
   function handleFolderInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -263,7 +267,7 @@ export default function Header() {
               <button className={styles.mobileMenuItem} onClick={handleOpenFile}>Open File</button>
               <button className={styles.mobileMenuItem} onClick={handleOpenFolder}>Open Folder</button>
               <button className={styles.mobileMenuItem} onClick={() => handleNewTab('projects')}>Create Project</button>
-              <button className={styles.mobileMenuItem} onClick={handleOpenFolder}>Open Project</button>
+              <button className={styles.mobileMenuItem} onClick={handleOpenProject}>Open Project</button>
               <button
                 className={activeTab ? styles.mobileMenuItem : styles.mobileMenuItemDisabled}
                 onClick={activeTab ? handleSaveAs : undefined}
@@ -384,7 +388,7 @@ export default function Header() {
                 <li className={styles.dropdownItem} onClick={() => handleNewTab('projects')}>
                   Create Project
                 </li>
-                <li className={styles.dropdownItem} onClick={handleOpenFolder}>
+                <li className={styles.dropdownItem} onClick={handleOpenProject}>
                   Open Project
                 </li>
                 <li className={styles.dropdownDivider} />
