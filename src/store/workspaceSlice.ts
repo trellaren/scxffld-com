@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type PanelType = 'editor' | 'diagram' | 'empty'
+export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings'
 
 export interface Tab {
   id: string

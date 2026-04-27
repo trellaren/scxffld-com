@@ -1,0 +1,257 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #1e1e1e;
+  color: #cccccc;
+}
+
+.content {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 32px 0;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #cccccc;
+  margin: 0 0 8px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.sectionDescription {
+  font-size: 13px;
+  color: #888888;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.configList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.configCard {
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.configCardEditing {
+  border-color: #007acc;
+}
+
+.configCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.configCardTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.configName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.configProvider {
+  font-size: 11px;
+  color: #888888;
+  background-color: #3c3c3c;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.configCardActions {
+  display: flex;
+  gap: 6px;
+}
+
+.configDetail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.configDetailLabel {
+  color: #888888;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.configDetailValue {
+  color: #cccccc;
+  word-break: break-all;
+}
+
+.notSet {
+  color: #666666;
+  font-style: italic;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formLabel {
+  font-size: 11px;
+  color: #aaaaaa;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.formInput {
+  background-color: #3c3c3c;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  color: #cccccc;
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  border-color: #007acc;
+}
+
+.formSelect {
+  background-color: #3c3c3c;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  color: #cccccc;
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.formSelect:focus {
+  border-color: #007acc;
+}
+
+.formHint {
+  font-size: 11px;
+  color: #666666;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.buttonPrimary {
+  background-color: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background-color: #0098ff;
+}
+
+.buttonPrimary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.buttonSecondary {
+  background-color: transparent;
+  color: #cccccc;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  font-size: 13px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.buttonSecondary:hover {
+  background-color: #3c3c3c;
+}
+
+.buttonSmall {
+  background-color: transparent;
+  color: #aaaaaa;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.buttonSmall:hover {
+  background-color: #3c3c3c;
+  color: #ffffff;
+}
+
+.buttonDanger {
+  border-color: #8b2020;
+  color: #cc5555;
+}
+
+.buttonDanger:hover {
+  background-color: #5a1a1a;
+  color: #ff8888;
+  border-color: #cc4444;
+}
+
+.buttonAddProvider {
+  background-color: transparent;
+  color: #007acc;
+  border: 1px dashed #007acc;
+  border-radius: 4px;
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background-color 0.1s;
+  margin-top: 4px;
+}
+
+.buttonAddProvider:hover {
+  background-color: #0a2a3d;
+}
