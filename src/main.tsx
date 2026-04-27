@@ -6,6 +6,7 @@ import { store } from './store/index.ts'
 import { initLogger } from './logger.ts'
 import './App.css'
 import './styles/themes.css'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 
 // Apply saved theme synchronously before React renders to prevent flash of
 // unstyled content.  The full settings load (with defaults) happens inside

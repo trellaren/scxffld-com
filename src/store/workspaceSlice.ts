@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings' | 'chat' | 'log' | 'projects'
+export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings' | 'chat' | 'log' | 'projects' | 'json'
 
 export interface Tab {
   id: string
@@ -47,6 +47,7 @@ export interface WorkspaceState {
   chatOpen: boolean
   chatMessages: Record<string, ChatMessage[]>
   chatSending: boolean
+  fileContents: Record<string, string>
 }
 
 const initialState: WorkspaceState = {
@@ -74,6 +75,7 @@ const initialState: WorkspaceState = {
   chatOpen: false,
   chatMessages: {},
   chatSending: false,
+  fileContents: {},
 }
 
 function findPanel(rows: PanelRow[], panelId: string): Panel | undefined {
@@ -185,6 +187,8 @@ const workspaceSlice = createSlice({
       }
       // Clean up any persisted chat messages for this tab
       delete state.chatMessages[action.payload.tabId]
+      // Clean up any stored file content for this tab
+      delete state.fileContents[action.payload.tabId]
     },
     moveTab(
       state,
@@ -440,6 +444,9 @@ const workspaceSlice = createSlice({
       state.openFolderName = action.payload.openFolderName
       state.openFolderFiles = action.payload.openFolderFiles
     },
+    setFileContent(state, action: PayloadAction<{ tabId: string; content: string }>) {
+      state.fileContents[action.payload.tabId] = action.payload.content
+    },
   },
 })
 
@@ -469,5 +476,6 @@ export const {
   setChatSending,
   toggleChat,
   loadProjectFile,
+  setFileContent,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer

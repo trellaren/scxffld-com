@@ -11,6 +11,7 @@ import {
   closeFolder,
   toggleChat,
   loadProjectFile,
+  setFileContent,
 } from '../../store/workspaceSlice'
 import type { PanelType, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline, loadTimeline } from '../../store/timelineSlice'
@@ -101,8 +102,23 @@ export default function Header() {
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    handleNewTab('editor', file.name)
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    const isJson = ext === 'json'
+    const tabType: PanelType = isJson ? 'json' : 'editor'
+    const tabId = generateId('tab')
+    if (activePanelId) {
+      dispatch(addTab({ panelId: activePanelId, tab: { id: tabId, type: tabType, title: file.name } }))
+    } else {
+      dispatch(addPanel({ id: generateId('panel'), tabs: [{ id: tabId, type: tabType, title: file.name }], activeTabId: tabId }))
+    }
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const content = ev.target?.result as string
+      dispatch(setFileContent({ tabId, content }))
+    }
+    reader.readAsText(file)
     e.target.value = ''
+    closeAll()
   }
 
   function handleOpenFolder() {

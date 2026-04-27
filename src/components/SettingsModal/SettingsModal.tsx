@@ -16,6 +16,9 @@ import {
   addRepository,
   updateRepository,
   removeRepository,
+  addProjectType,
+  updateProjectType,
+  removeProjectType,
   loadSettingsFromJson,
 } from '../../store/settingsSlice'
 import type {
@@ -25,10 +28,11 @@ import type {
   TeamRecord,
   RepositoryRecord,
   RepositoryType,
+  ProjectTypeRecord,
 } from '../../store/settingsSlice'
 import styles from './SettingsModal.module.css'
 
-type TabId = 'plugins' | 'themes' | 'users' | 'teams' | 'repositories'
+type TabId = 'plugins' | 'themes' | 'users' | 'teams' | 'repositories' | 'project-types'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'plugins', label: 'Plugins' },
@@ -36,6 +40,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'users', label: 'Users' },
   { id: 'teams', label: 'Teams' },
   { id: 'repositories', label: 'Repositories' },
+  { id: 'project-types', label: 'Project Types' },
 ]
 
 const REPO_TYPES: { value: RepositoryType; label: string }[] = [
@@ -617,6 +622,232 @@ function RepositoriesTab() {
   )
 }
 
+// ─── Project Types Tab ────────────────────────────────────────────────────────
+
+function ProjectTypesTab() {
+  const dispatch = useDispatch()
+  const projectTypes = useSelector((state: RootState) => state.settings.settings.projectTypes ?? [])
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const emptyForm = {
+    name: '',
+    description: '',
+    icon: '📦',
+    defaultFolders: '',
+    defaultTabs: '',
+    defaultFiles: '',
+  }
+  const [form, setForm] = useState(emptyForm)
+
+  function formToRecord(id: string): ProjectTypeRecord {
+    return {
+      id,
+      name: form.name.trim(),
+      description: form.description.trim(),
+      icon: form.icon || '📦',
+      defaultFolders: form.defaultFolders.split('\n').map((s) => s.trim()).filter(Boolean),
+      defaultTabs: form.defaultTabs.split('\n').map((s) => s.trim()).filter(Boolean),
+      defaultFiles: form.defaultFiles.split('\n').map((s) => s.trim()).filter(Boolean),
+    }
+  }
+
+  function recordToForm(pt: ProjectTypeRecord) {
+    return {
+      name: pt.name,
+      description: pt.description,
+      icon: pt.icon,
+      defaultFolders: pt.defaultFolders.join('\n'),
+      defaultTabs: pt.defaultTabs.join('\n'),
+      defaultFiles: pt.defaultFiles.join('\n'),
+    }
+  }
+
+  function handleAdd() {
+    if (!form.name.trim()) return
+    dispatch(addProjectType({
+      name: form.name.trim(),
+      description: form.description.trim(),
+      icon: form.icon || '📦',
+      defaultFolders: form.defaultFolders.split('\n').map((s) => s.trim()).filter(Boolean),
+      defaultTabs: form.defaultTabs.split('\n').map((s) => s.trim()).filter(Boolean),
+      defaultFiles: form.defaultFiles.split('\n').map((s) => s.trim()).filter(Boolean),
+    }))
+    setForm(emptyForm)
+  }
+
+  function handleEdit(pt: ProjectTypeRecord) {
+    setEditingId(pt.id)
+    setForm(recordToForm(pt))
+  }
+
+  function handleSaveEdit(id: string) {
+    dispatch(updateProjectType(formToRecord(id)))
+    setEditingId(null)
+    setForm(emptyForm)
+  }
+
+  function handleCancel() {
+    setEditingId(null)
+    setForm(emptyForm)
+  }
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.sectionTitle}>Project Types</div>
+
+      <div className={styles.listContainer}>
+        {projectTypes.length === 0 && (
+          <div className={styles.emptyState}>No custom project types configured.</div>
+        )}
+        {projectTypes.map((pt) =>
+          editingId === pt.id ? (
+            <div key={pt.id} className={styles.addForm}>
+              <div className={styles.addFormTitle}>Edit Project Type</div>
+              <div className={styles.addFormRow}>
+                <input
+                  className={styles.fieldInput}
+                  placeholder="Icon (emoji or bi-* class)"
+                  value={form.icon}
+                  style={{ maxWidth: 120 }}
+                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                />
+                <input
+                  className={styles.fieldInput}
+                  placeholder="Name"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+              <div className={styles.addFormRow}>
+                <input
+                  className={styles.fieldInput}
+                  placeholder="Description"
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                />
+              </div>
+              <div className={styles.addFormRow}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Default Folders (one per line)</label>
+                  <textarea
+                    className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                    placeholder="src&#10;public&#10;docs"
+                    value={form.defaultFolders}
+                    onChange={(e) => setForm((f) => ({ ...f, defaultFolders: e.target.value }))}
+                  />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Default Tabs (one per line)</label>
+                  <textarea
+                    className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                    placeholder="editor&#10;diagram&#10;chat"
+                    value={form.defaultTabs}
+                    onChange={(e) => setForm((f) => ({ ...f, defaultTabs: e.target.value }))}
+                  />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Default Files (one per line)</label>
+                  <textarea
+                    className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                    placeholder="README.md&#10;index.html"
+                    value={form.defaultFiles}
+                    onChange={(e) => setForm((f) => ({ ...f, defaultFiles: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className={styles.addFormActions}>
+                <button className={styles.buttonSecondary} onClick={handleCancel}>
+                  Cancel
+                </button>
+                <button className={styles.buttonSmall} onClick={() => handleSaveEdit(pt.id)} disabled={!form.name.trim()}>
+                  Save
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div key={pt.id} className={styles.listItem}>
+              <span className={styles.projectTypeIcon}>{pt.icon}</span>
+              <span className={styles.listItemName}>{pt.name}</span>
+              <span className={styles.listItemMeta}>{pt.description}</span>
+              <div className={styles.listItemActions}>
+                <button className={styles.buttonSmall} onClick={() => handleEdit(pt)}>
+                  Edit
+                </button>
+                <button className={styles.buttonDanger} onClick={() => dispatch(removeProjectType(pt.id))}>
+                  Remove
+                </button>
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+
+      {editingId === null && (
+        <div className={styles.addForm}>
+          <div className={styles.addFormTitle}>Add Project Type</div>
+          <div className={styles.addFormRow}>
+            <input
+              className={styles.fieldInput}
+              placeholder="Icon (emoji)"
+              value={form.icon}
+              style={{ maxWidth: 120 }}
+              onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+            />
+            <input
+              className={styles.fieldInput}
+              placeholder="Name"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            />
+          </div>
+          <div className={styles.addFormRow}>
+            <input
+              className={styles.fieldInput}
+              placeholder="Description"
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            />
+          </div>
+          <div className={styles.addFormRow}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Default Folders (one per line)</label>
+              <textarea
+                className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                placeholder="src&#10;public&#10;docs"
+                value={form.defaultFolders}
+                onChange={(e) => setForm((f) => ({ ...f, defaultFolders: e.target.value }))}
+              />
+            </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Default Tabs (one per line)</label>
+              <textarea
+                className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                placeholder="editor&#10;diagram&#10;chat"
+                value={form.defaultTabs}
+                onChange={(e) => setForm((f) => ({ ...f, defaultTabs: e.target.value }))}
+              />
+            </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Default Files (one per line)</label>
+              <textarea
+                className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                placeholder="README.md&#10;index.html"
+                value={form.defaultFiles}
+                onChange={(e) => setForm((f) => ({ ...f, defaultFiles: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className={styles.addFormActions}>
+            <button className={styles.buttonSmall} onClick={handleAdd} disabled={!form.name.trim()}>
+              Add
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
 export default function SettingsModal() {
@@ -743,6 +974,7 @@ export default function SettingsModal() {
             {activeTab === 'users' && <UsersTab />}
             {activeTab === 'teams' && <TeamsTab />}
             {activeTab === 'repositories' && <RepositoriesTab />}
+            {activeTab === 'project-types' && <ProjectTypesTab />}
           </div>
         </div>
 
