@@ -13,8 +13,10 @@ import {
 } from '../../store/workspaceSlice'
 import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
+import { openSettings } from '../../store/settingsSlice'
 import { generateId } from '../../utils'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
+import SettingsModal from '../SettingsModal/SettingsModal'
 import styles from './Header.module.css'
 
 export default function Header() {
@@ -24,6 +26,7 @@ export default function Header() {
   const rows = useSelector((state: RootState) => state.workspace.rows)
   const panels = rows.flatMap((row) => row.panels)
   const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
+  const settingsOpen = useSelector((state: RootState) => state.settings.open)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [saveAsOpen, setSaveAsOpen] = useState(false)
@@ -175,6 +178,11 @@ export default function Header() {
   function handleSaveAs() {
     closeAll()
     setSaveAsOpen(true)
+  }
+
+  function handleOpenSettings() {
+    closeAll()
+    dispatch(openSettings())
   }
 
   return (
