@@ -58,6 +58,7 @@ const defaultConfigs: ModelConfig[] = [
   },
 ]
 
+/** localStorage key for AI state persistence. "scxffld" is the application's brand name. */
 const AI_STORAGE_KEY = 'scxffld-ai-state'
 
 /** Load persisted AI state from localStorage, falling back to undefined on any error. */
