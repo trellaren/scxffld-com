@@ -10,8 +10,8 @@ body,
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background-color: #1e1e1e;
-  color: #d4d4d4;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
@@ -24,10 +24,10 @@ body,
 }
 
 [data-panel-resize-handle] {
-  background: #3c3c3c;
+  background: var(--border-color);
 }
 
 [data-panel-resize-handle][data-resize-handle-state='hover'],
 [data-panel-resize-handle][data-resize-handle-state='drag'] {
-  background: #007acc;
+  background: var(--accent);
 }

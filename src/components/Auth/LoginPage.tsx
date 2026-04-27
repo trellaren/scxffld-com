@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { useDispatch } from 'react-redux'
 import { login } from '../../store/authSlice'
+import { logger } from '../../logger'
 import styles from './LoginPage.module.css'
 
 export default function LoginPage() {
@@ -21,6 +22,7 @@ export default function LoginPage() {
     }
     // Client-side only auth — any non-empty credentials are accepted
     setError('')
+    logger.info(`User signed in: ${username.trim()}`)
     dispatch(login({ username: username.trim(), displayName: username.trim() }))
   }
 

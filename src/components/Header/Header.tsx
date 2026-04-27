@@ -18,6 +18,7 @@ import { toggleTimeline, loadTimeline } from '../../store/timelineSlice'
 import type { TimelineItem } from '../../store/timelineSlice'
 import { openSettings, updateTheme, AVAILABLE_THEMES } from '../../store/settingsSlice'
 import { generateId, downloadProjectFile } from '../../utils'
+import { logger } from '../../logger'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
 import AiPrompt from './AiPrompt'
 import SettingsModal from '../SettingsModal/SettingsModal'
@@ -66,6 +67,7 @@ export default function Header() {
       type === 'log' ? 'App Log' :
       'Panel'
     const tabTitle = title ?? defaultTitle
+    logger.info(`Opening new tab: ${tabTitle} (${type})`)
     if (activePanelId) {
       dispatch(
         addTab({
@@ -138,11 +140,13 @@ export default function Header() {
       }
     }
 
+    logger.info(`Opened folder: ${folderName} (${files.length} file${files.length === 1 ? '' : 's'})`)
     dispatch(openFolder({ name: folderName, files: [...folderEntries, ...fileEntries] }))
     e.target.value = ''
   }
 
   function handleCloseFolder() {
+    logger.info('Closed folder')
     dispatch(closeFolder())
     closeAll()
   }
@@ -184,6 +188,7 @@ export default function Header() {
   }
 
   function handleLogout() {
+    logger.info('User signed out')
     dispatch(logout())
     closeAll()
   }
@@ -204,6 +209,7 @@ export default function Header() {
   }
 
   function handleSaveProjectFile() {
+    logger.info('Saving project file')
     closeAll()
     downloadProjectFile(workspaceState, timelineItems)
   }
@@ -396,7 +402,7 @@ export default function Header() {
                     key={theme.id}
                     className={styles.dropdownItem}
                     style={{ paddingLeft: 24 }}
-                    onClick={() => { dispatch(updateTheme({ activeTheme: theme.id })); closeAll() }}
+                    onClick={() => { logger.info(`Theme changed to: ${theme.name}`); dispatch(updateTheme({ activeTheme: theme.id })); closeAll() }}
                   >
                     {theme.name}
                   </li>

@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   height: 36px;
-  background-color: #323233;
-  border-bottom: 1px solid #3c3c3c;
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
   padding: 0 8px;
   flex-shrink: 0;
   position: relative;
@@ -15,7 +15,7 @@
 .appName {
   font-size: 14px;
   font-weight: 700;
-  color: #007acc;
+  color: var(--accent);
   letter-spacing: 0.04em;
   padding: 0 8px;
   margin-right: 8px;
@@ -35,7 +35,7 @@
 .menuButton {
   background: none;
   border: none;
-  color: #cccccc;
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 4px 10px;
   cursor: pointer;
@@ -46,16 +46,16 @@
 
 .menuButton:hover,
 .menuButtonActive {
-  background-color: #3c3c3c;
-  color: #ffffff;
+  background-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .dropdown {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   min-width: 180px;
   list-style: none;
@@ -72,28 +72,28 @@
 .dropdownItem {
   padding: 6px 16px;
   font-size: 13px;
-  color: #cccccc;
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.1s;
 }
 
 .dropdownItem:hover {
-  background-color: #094771;
-  color: #ffffff;
+  background-color: var(--selection);
+  color: var(--text-primary);
 }
 
 .dropdownItemDisabled {
   padding: 6px 16px;
   font-size: 12px;
-  color: #777777;
+  color: var(--text-muted);
   cursor: default;
   white-space: nowrap;
 }
 
 .dropdownDivider {
   height: 1px;
-  background-color: #3c3c3c;
+  background-color: var(--border-color);
   margin: 4px 0;
 }
 
@@ -118,7 +118,7 @@
   gap: 8px;
   background: none;
   border: none;
-  color: #cccccc;
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 4px 8px;
   cursor: pointer;
@@ -129,8 +129,8 @@
 
 .userButton:hover,
 .userButtonActive {
-  background-color: #3c3c3c;
-  color: #ffffff;
+  background-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .avatar {
@@ -139,7 +139,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  background-color: #007acc;
+  background-color: var(--accent);
   border-radius: 50%;
   font-size: 11px;
   font-weight: 700;
@@ -176,7 +176,7 @@
   height: 36px;
   background: none;
   border: none;
-  color: #cccccc;
+  color: var(--text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.1s;
@@ -184,8 +184,8 @@
 }
 
 .windowControlButton:hover {
-  background-color: #3c3c3c;
-  color: #ffffff;
+  background-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .windowControlClose:hover {

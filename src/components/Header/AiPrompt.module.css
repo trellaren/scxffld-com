@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  background-color: #3c3c3c;
+  background-color: var(--border-color);
   border: 1px solid transparent;
   border-radius: 6px;
   padding: 0 6px;
@@ -25,7 +25,7 @@
   height: 72px;
   align-items: flex-end;
   padding-bottom: 6px;
-  border-color: #007acc;
+  border-color: var(--accent);
 }
 
 .promptInput {
@@ -33,7 +33,7 @@
   background: none;
   border: none;
   outline: none;
-  color: #cccccc;
+  color: var(--text-secondary);
   font-size: 13px;
   resize: none;
   line-height: 1.4;
@@ -50,7 +50,7 @@
 }
 
 .promptInput::placeholder {
-  color: #777777;
+  color: var(--text-muted);
 }
 
 .controls {
@@ -75,7 +75,7 @@
   gap: 2px;
   background: none;
   border: none;
-  color: #999999;
+  color: var(--text-muted);
   font-size: 11px;
   cursor: pointer;
   padding: 2px 4px;
@@ -85,8 +85,8 @@
 }
 
 .modelButton:hover {
-  background-color: #4c4c4c;
-  color: #cccccc;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
 }
 
 .modelLabel {
@@ -105,8 +105,8 @@
   position: absolute;
   bottom: calc(100% + 6px);
   right: 0;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   min-width: 180px;
   list-style: none;
@@ -124,7 +124,7 @@
 .modelGroupLabel {
   padding: 4px 12px 2px;
   font-size: 11px;
-  color: #666666;
+  color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -133,7 +133,7 @@
 .modelItem {
   padding: 5px 12px 5px 20px;
   font-size: 13px;
-  color: #cccccc;
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
@@ -142,17 +142,17 @@
 }
 
 .modelItem:hover {
-  background-color: #094771;
-  color: #ffffff;
+  background-color: var(--selection);
+  color: var(--text-primary);
 }
 
 .modelItemSelected {
-  color: #4fc3f7;
+  color: var(--accent);
 }
 
 .modelDivider {
   height: 1px;
-  background-color: #3c3c3c;
+  background-color: var(--border-color);
   margin: 4px 0;
   list-style: none;
 }
@@ -169,7 +169,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  background-color: #007acc;
+  background-color: var(--accent);
   border: none;
   border-radius: 4px;
   color: #ffffff;
@@ -181,11 +181,11 @@
 }
 
 .submitButton:hover {
-  background-color: #005f9e;
+  background-color: var(--accent-hover);
 }
 
 .submitButton:disabled {
-  background-color: #3c3c3c;
-  color: #666666;
+  background-color: var(--border-color);
+  color: var(--text-muted);
   cursor: default;
 }
