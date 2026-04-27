@@ -4,6 +4,7 @@ import { RootState } from '../../store'
 import { setSelectedModel } from '../../store/aiSlice'
 import { addPanel, addTab } from '../../store/workspaceSlice'
 import { generateId } from '../../utils'
+import { loadModel, unloadModel } from '../../services/aiApi'
 import styles from './AiPrompt.module.css'
 
 export default function AiPrompt() {
@@ -50,19 +51,17 @@ export default function AiPrompt() {
 
   function handleSubmit() {
     if (!prompt.trim()) return
-    // For now: open a new panel/tab with the prompt as content
-    // Future: send to AI API
+    // Open a chat tab
     const tabId = generateId('tab')
-    const tabTitle = `AI: ${prompt.slice(0, 30)}${prompt.length > 30 ? '…' : ''}`
     if (activePanelId) {
       dispatch(addTab({
         panelId: activePanelId,
-        tab: { id: tabId, type: 'editor', title: tabTitle },
+        tab: { id: tabId, type: 'chat', title: 'Chat' },
       }))
     } else {
       dispatch(addPanel({
         id: generateId('panel'),
-        tabs: [{ id: tabId, type: 'editor', title: tabTitle }],
+        tabs: [{ id: tabId, type: 'chat', title: 'Chat' }],
         activeTabId: tabId,
       }))
     }
@@ -71,6 +70,19 @@ export default function AiPrompt() {
   }
 
   function handleSelectModel(configId: string, modelId: string) {
+    // Unload previously selected model if provider supports it
+    const prevConfig = modelConfigs.find((c) => c.id === selectedConfigId)
+    const prevModelId = selectedModelId
+    if (prevConfig && prevModelId && (prevConfig.id !== configId || prevModelId !== modelId)) {
+      unloadModel(prevConfig, prevModelId).catch(() => {/* ignore unload errors */})
+    }
+
+    // Load the newly selected model
+    const nextConfig = modelConfigs.find((c) => c.id === configId)
+    if (nextConfig) {
+      loadModel(nextConfig, modelId).catch(() => {/* ignore load errors */})
+    }
+
     dispatch(setSelectedModel({ configId, modelId }))
     setModelDropdownOpen(false)
   }
