@@ -105,6 +105,32 @@ const workspaceSlice = createSlice({
         }
       }
     },
+    moveTab(
+      state,
+      action: PayloadAction<{ tabId: string; sourcePanelId: string; targetPanelId: string }>,
+    ) {
+      const { tabId, sourcePanelId, targetPanelId } = action.payload
+      if (sourcePanelId === targetPanelId) return
+      const sourcePanel = state.panels.find((p) => p.id === sourcePanelId)
+      const targetPanel = state.panels.find((p) => p.id === targetPanelId)
+      if (!sourcePanel || !targetPanel) return
+      const tabIdx = sourcePanel.tabs.findIndex((t) => t.id === tabId)
+      if (tabIdx === -1) return
+      const [tab] = sourcePanel.tabs.splice(tabIdx, 1)
+      if (sourcePanel.activeTabId === tabId) {
+        sourcePanel.activeTabId =
+          sourcePanel.tabs[Math.max(0, tabIdx - 1)]?.id ?? sourcePanel.tabs[0]?.id ?? null
+      }
+      if (sourcePanel.tabs.length === 0) {
+        state.panels = state.panels.filter((p) => p.id !== sourcePanelId)
+        if (state.activePanelId === sourcePanelId) {
+          state.activePanelId = state.panels[0]?.id ?? null
+        }
+      }
+      targetPanel.tabs.push(tab)
+      targetPanel.activeTabId = tab.id
+      state.activePanelId = targetPanelId
+    },
     toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen
     },
@@ -132,6 +158,7 @@ export const {
   removePanel,
   addTab,
   removeTab,
+  moveTab,
   renameTab,
   toggleSidebar,
   setSplitDirection,

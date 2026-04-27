@@ -32,6 +32,11 @@
   align-items: stretch;
 }
 
+.tabBarDragOver {
+  background-color: #1a3a5c;
+  border-bottom-color: #007acc;
+}
+
 .tabBarTabs {
   display: flex;
   flex-direction: row;
