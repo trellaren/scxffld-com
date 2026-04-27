@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ReactFlow, {
   addEdge,
   Background,
@@ -7,12 +7,16 @@ import ReactFlow, {
   useEdgesState,
   useNodesState,
 } from 'reactflow'
-import type { Connection, Node, Edge } from 'reactflow'
+import type { Connection, Node, Edge, ReactFlowInstance } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import { setDiagramData } from '../../store/workspaceSlice'
 import DiagramObjectPalette from './DiagramObjectPalette'
+import DiagramNodeTree from './DiagramNodeTree'
+import ContextMenu from '../ContextMenu/ContextMenu'
+import type { ContextMenuEntry } from '../ContextMenu/ContextMenu'
+import { generateId } from '../../utils'
 import styles from './DiagramCanvas.module.css'
 
 const defaultNodes: Node[] = [
@@ -32,13 +36,28 @@ const defaultNodes: Node[] = [
 
 const defaultEdges: Edge[] = [{ id: 'e1-2', source: '1', target: '2', animated: true }]
 
+const DEFAULT_NODE_STYLE = { background: '#2d2d2d', color: '#d4d4d4', border: '1px solid #555' }
+
 interface DiagramCanvasProps {
   tabId: string
+}
+
+interface ContextMenuState {
+  x: number
+  y: number
+  items: ContextMenuEntry[]
+}
+
+interface EditNodeState {
+  id: string
+  label: string
 }
 
 export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
   const dispatch = useDispatch()
   const savedData = useSelector((state: RootState) => state.workspace.diagramData[tabId])
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(
     savedData ? (savedData.nodes as Node[]) : defaultNodes,
@@ -46,6 +65,9 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     savedData ? (savedData.edges as Edge[]) : defaultEdges,
   )
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const [editNode, setEditNode] = useState<EditNodeState | null>(null)
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -60,26 +82,140 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
     setNodes((nds) => [...nds, node])
   }
 
+  function handleDeleteNode(nodeId: string) {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId))
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId))
+  }
+
+  function handleFocusNode(node: Node) {
+    rfInstance?.setCenter(node.position.x + 60, node.position.y + 20, { zoom: 1.5, duration: 400 })
+  }
+
+  function handlePaneContextMenu(event: React.MouseEvent) {
+    event.preventDefault()
+    const bounds = canvasRef.current?.getBoundingClientRect()
+    const position = rfInstance
+      ? rfInstance.project({
+          x: event.clientX - (bounds?.left ?? 0),
+          y: event.clientY - (bounds?.top ?? 0),
+        })
+      : { x: 100, y: 100 }
+    const items: ContextMenuEntry[] = [
+      {
+        label: 'Add Node Here',
+        onClick: () => {
+          const id = generateId('node')
+          setNodes((nds) => [
+            ...nds,
+            {
+              id,
+              position,
+              data: { label: 'New Node' },
+              style: DEFAULT_NODE_STYLE,
+            },
+          ])
+        },
+      },
+    ]
+    setContextMenu({ x: event.clientX, y: event.clientY, items })
+  }
+
+  function handleNodeContextMenu(event: React.MouseEvent, node: Node) {
+    event.preventDefault()
+    const items: ContextMenuEntry[] = [
+      {
+        label: 'Edit Label',
+        onClick: () => setEditNode({ id: node.id, label: String(node.data?.label ?? '') }),
+      },
+      'divider',
+      {
+        label: 'Delete Node',
+        onClick: () => handleDeleteNode(node.id),
+      },
+    ]
+    setContextMenu({ x: event.clientX, y: event.clientY, items })
+  }
+
+  function handleNodeDoubleClick(_event: React.MouseEvent, node: Node) {
+    setEditNode({ id: node.id, label: String(node.data?.label ?? '') })
+  }
+
+  function handleEditConfirm() {
+    if (!editNode) return
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === editNode.id ? { ...n, data: { ...n.data, label: editNode.label } } : n,
+      ),
+    )
+    setEditNode(null)
+  }
+
   return (
     <div className={styles.canvasWrapper}>
-      <div className={styles.canvas}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-        >
-          <Background color="#3c3c3c" />
-          <Controls />
-          <MiniMap
-            style={{ background: '#1e1e1e' }}
-            nodeColor="#555"
-          />
-        </ReactFlow>
+      <DiagramNodeTree
+        nodes={nodes}
+        onDeleteNode={handleDeleteNode}
+        onFocusNode={handleFocusNode}
+      />
+      <div className={styles.canvasArea}>
+        <div className={styles.canvas} ref={canvasRef}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onInit={setRfInstance}
+            onPaneContextMenu={handlePaneContextMenu}
+            onNodeContextMenu={handleNodeContextMenu}
+            onNodeDoubleClick={handleNodeDoubleClick}
+            fitView
+          >
+            <Background color="#3c3c3c" />
+            <Controls />
+            <MiniMap
+              style={{ background: '#1e1e1e' }}
+              nodeColor="#555"
+            />
+          </ReactFlow>
+        </div>
+        <DiagramObjectPalette onAddNode={handleAddNode} />
       </div>
-      <DiagramObjectPalette onAddNode={handleAddNode} />
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenu.items}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {editNode && (
+        <div className={styles.editOverlay} onClick={() => setEditNode(null)}>
+          <div className={styles.editDialog} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.editTitle}>Edit Node Label</div>
+            <input
+              className={styles.editInput}
+              value={editNode.label}
+              onChange={(e) => setEditNode({ ...editNode, label: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleEditConfirm()
+                if (e.key === 'Escape') setEditNode(null)
+              }}
+              autoFocus
+            />
+            <div className={styles.editActions}>
+              <button className={styles.editCancel} onClick={() => setEditNode(null)}>
+                Cancel
+              </button>
+              <button className={styles.editConfirm} onClick={handleEditConfirm}>
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
