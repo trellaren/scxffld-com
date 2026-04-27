@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import {
@@ -12,6 +12,7 @@ import {
   removeFolderEntry,
   renameFolderEntry,
   setActivePath,
+  openFolder,
 } from '../../store/workspaceSlice'
 import type { Tab, FileEntry } from '../../store/workspaceSlice'
 import { generateId } from '../../utils'
@@ -25,6 +26,10 @@ function fileIcon(type: Tab['type']) {
       return '📄'
     case 'diagram':
       return '🔷'
+    case 'chat':
+      return '💬'
+    case 'projects':
+      return '📁'
     default:
       return '📋'
   }
@@ -58,6 +63,8 @@ export default function Sidebar() {
   const openFolderFiles = useSelector((state: RootState) => state.workspace.openFolderFiles)
   const activePath = useSelector((state: RootState) => state.workspace.activePath)
 
+  const folderInputRef = useRef<HTMLInputElement>(null)
+
   // Derive flat panels list from rows
   const panels = rows.flatMap((row) => row.panels)
 
@@ -81,6 +88,36 @@ export default function Sidebar() {
       dispatch(addPanel({ id: generateId('panel'), tabs: [{ id: tabId, type, title }], activeTabId: tabId }))
     }
   }
+
+  function handleOpenFolder() {
+    folderInputRef.current?.click()
+  }
+
+  function handleFolderInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
+    const folderName = firstPath ? firstPath.split('/')[0] : 'Folder'
+    const fileEntries: FileEntry[] = Array.from(files).map((f) => {
+      const relativePath = (f as File & { webkitRelativePath: string }).webkitRelativePath
+      return { name: f.name, path: relativePath || f.name, kind: 'file' as const }
+    })
+    const seenFolderPaths = new Set<string>()
+    const folderEntries: FileEntry[] = []
+    for (const entry of fileEntries) {
+      const parts = entry.path.split('/')
+      for (let depth = 1; depth < parts.length - 1; depth++) {
+        const folderPath = parts.slice(0, depth + 1).join('/')
+        if (!seenFolderPaths.has(folderPath)) {
+          seenFolderPaths.add(folderPath)
+          folderEntries.push({ name: parts[depth], path: folderPath, kind: 'folder' })
+        }
+      }
+    }
+    dispatch(openFolder({ name: folderName, files: [...folderEntries, ...fileEntries] }))
+    e.target.value = ''
+  }
+
 
   function startRenameEntry(path: string, currentName: string) {
     setRenaming({ kind: 'entry', path })
@@ -144,6 +181,9 @@ export default function Sidebar() {
       { label: 'New Text File', onClick: () => openTab('editor', 'Untitled') },
       { label: 'New Diagram', onClick: () => openTab('diagram', 'Untitled Diagram') },
       { label: 'New Chat', onClick: () => openTab('chat', 'Chat') },
+      'divider',
+      { label: 'Create Project', onClick: () => openTab('projects', 'Projects') },
+      { label: 'Open Project', onClick: handleOpenFolder },
       'divider',
       { label: 'AI Settings', onClick: () => openTab('settings', 'AI Settings') },
     ])
@@ -272,6 +312,17 @@ export default function Sidebar() {
 
   return (
     <div className={styles.sidebar} onContextMenu={handleSidebarContextMenu}>
+      {/* Hidden folder input for "Open Project" */}
+      <input
+        ref={folderInputRef}
+        type="file"
+        // @ts-expect-error – webkitdirectory is not in React's HTML typedefs
+        webkitdirectory=""
+        multiple
+        style={{ display: 'none' }}
+        onChange={handleFolderInputChange}
+      />
+
       <div className={styles.sidebarTitle}>EXPLORER</div>
 
       {openFolderName && (
