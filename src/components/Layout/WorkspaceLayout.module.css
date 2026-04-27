@@ -205,6 +205,52 @@
   color: var(--text-primary);
 }
 
+/* ── Edge drop zones (shown during tab drag) ───────────────────────────────── */
+
+.edgeDropZone {
+  position: absolute;
+  z-index: 20;
+  pointer-events: auto;
+  transition: background-color 0.1s, border-color 0.1s;
+}
+
+.edgeDropZoneLeft {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 25%;
+  cursor: w-resize;
+}
+
+.edgeDropZoneRight {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 25%;
+  cursor: e-resize;
+}
+
+.edgeDropZoneTop {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  cursor: n-resize;
+}
+
+.edgeDropZoneBottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  cursor: s-resize;
+}
+
+.edgeDropZoneHover {
+  background-color: var(--selection);
+  border: 2px dashed var(--accent);
+}
+
 /* ── Mobile overlays ───────────────────────────────────────────────────────── */
 
 .mobileSidebarBackdrop,

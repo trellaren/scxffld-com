@@ -211,6 +211,156 @@ const workspaceSlice = createSlice({
       targetPanel.activeTabId = tab.id
       state.activePanelId = targetPanelId
     },
+    /**
+     * Split the active tab into a new panel in the given direction.
+     * The active tab is moved out of the current panel and placed in a
+     * freshly-created panel to the right (same row) or below (new row).
+     */
+    splitActiveTab(
+      state,
+      action: PayloadAction<{ direction: 'right' | 'down'; newPanelId: string; newRowId?: string }>,
+    ) {
+      const { direction, newPanelId, newRowId } = action.payload
+      if (!state.activePanelId) return
+
+      const activePanel = findPanel(state.rows, state.activePanelId)
+      if (!activePanel || !activePanel.activeTabId) return
+
+      const tabIdx = activePanel.tabs.findIndex((t) => t.id === activePanel.activeTabId)
+      if (tabIdx === -1) return
+
+      // Remove the active tab from the current panel
+      const [tab] = activePanel.tabs.splice(tabIdx, 1)
+      activePanel.activeTabId =
+        activePanel.tabs[Math.max(0, tabIdx - 1)]?.id ?? activePanel.tabs[0]?.id ?? null
+
+      const newPanel: Panel = { id: newPanelId, tabs: [tab], activeTabId: tab.id }
+      const activePanelId = state.activePanelId
+
+      if (direction === 'right') {
+        const row = findRowByPanelId(state.rows, activePanelId)
+        if (!row) return
+        const panelIdx = row.panels.findIndex((p) => p.id === activePanelId)
+        if (activePanel.tabs.length === 0) {
+          // Replace the now-empty source panel in-place
+          row.panels.splice(panelIdx, 1, newPanel)
+        } else {
+          row.panels.splice(panelIdx + 1, 0, newPanel)
+        }
+      } else {
+        // direction === 'down'
+        const rowIdx = state.rows.findIndex((r) => r.panels.some((p) => p.id === activePanelId))
+        if (rowIdx === -1) return
+        const id = newRowId ?? `row-${Date.now()}`
+        const currentRow = state.rows[rowIdx]
+        if (activePanel.tabs.length === 0) {
+          currentRow.panels = currentRow.panels.filter((p) => p.id !== activePanelId)
+          if (currentRow.panels.length === 0) {
+            state.rows.splice(rowIdx, 1, { id, panels: [newPanel] })
+          } else {
+            state.rows.splice(rowIdx + 1, 0, { id, panels: [newPanel] })
+          }
+        } else {
+          state.rows.splice(rowIdx + 1, 0, { id, panels: [newPanel] })
+        }
+      }
+      state.activePanelId = newPanelId
+    },
+    /**
+     * Move a dragged tab onto the edge of a target panel, creating a new
+     * split panel.  Edges 'left'/'right' add a panel to the target's row;
+     * 'top'/'bottom' add a new row adjacent to the target's row.
+     */
+    moveTabToSplit(
+      state,
+      action: PayloadAction<{
+        tabId: string
+        sourcePanelId: string
+        targetPanelId: string
+        edge: 'left' | 'right' | 'top' | 'bottom'
+        newPanelId: string
+        newRowId?: string
+      }>,
+    ) {
+      const { tabId, sourcePanelId, targetPanelId, edge, newPanelId, newRowId } = action.payload
+
+      const sourcePanel = findPanel(state.rows, sourcePanelId)
+      if (!sourcePanel) return
+
+      const tabIdx = sourcePanel.tabs.findIndex((t) => t.id === tabId)
+      if (tabIdx === -1) return
+
+      // Remember target position before any structural changes
+      let targetRowIdx = state.rows.findIndex((r) => r.panels.some((p) => p.id === targetPanelId))
+      if (targetRowIdx === -1) return
+      let targetPanelIdx = state.rows[targetRowIdx].panels.findIndex((p) => p.id === targetPanelId)
+
+      const sourceRowIdx = state.rows.findIndex((r) => r.panels.some((p) => p.id === sourcePanelId))
+      const sourceRow = state.rows[sourceRowIdx]
+      const sourcePanelIdx = sourceRow.panels.findIndex((p) => p.id === sourcePanelId)
+
+      // Remove tab from source panel
+      const [tab] = sourcePanel.tabs.splice(tabIdx, 1)
+      if (sourcePanel.activeTabId === tabId) {
+        sourcePanel.activeTabId =
+          sourcePanel.tabs[Math.max(0, tabIdx - 1)]?.id ?? sourcePanel.tabs[0]?.id ?? null
+      }
+
+      // Clean up empty source panel
+      if (sourcePanel.tabs.length === 0) {
+        if (sourcePanelId === targetPanelId) {
+          // Degenerate case: the only tab in a panel was dragged to the panel's own
+          // edge.  Replace the now-empty panel with the new one in-place (left/right)
+          // or remove it and create a new row (top/bottom).
+          const newPanel: Panel = { id: newPanelId, tabs: [tab], activeTabId: tab.id }
+          const rowId = newRowId ?? `row-${Date.now()}`
+          const targetRow = state.rows[targetRowIdx]
+          if (edge === 'left' || edge === 'right') {
+            targetRow.panels.splice(targetPanelIdx, 1, newPanel)
+          } else {
+            targetRow.panels.splice(targetPanelIdx, 1)
+            if (targetRow.panels.length === 0) {
+              state.rows.splice(targetRowIdx, 1, { id: rowId, panels: [newPanel] })
+            } else if (edge === 'top') {
+              state.rows.splice(targetRowIdx, 0, { id: rowId, panels: [newPanel] })
+            } else {
+              state.rows.splice(targetRowIdx + 1, 0, { id: rowId, panels: [newPanel] })
+            }
+          }
+          state.activePanelId = newPanelId
+          return
+        }
+        sourceRow.panels.splice(sourcePanelIdx, 1)
+        if (sourceRow.panels.length === 0) {
+          state.rows.splice(sourceRowIdx, 1)
+          if (sourceRowIdx < targetRowIdx) targetRowIdx -= 1
+        } else if (sourceRowIdx === targetRowIdx && sourcePanelIdx < targetPanelIdx) {
+          targetPanelIdx -= 1
+        }
+        if (state.activePanelId === sourcePanelId) {
+          state.activePanelId = state.rows[0]?.panels[0]?.id ?? null
+        }
+      }
+
+      const targetRow = state.rows[targetRowIdx]
+      if (!targetRow) return
+
+      const newPanel: Panel = { id: newPanelId, tabs: [tab], activeTabId: tab.id }
+      const rowId = newRowId ?? `row-${Date.now()}`
+
+      if (edge === 'left') {
+        targetRow.panels.splice(targetPanelIdx, 0, newPanel)
+      } else if (edge === 'right') {
+        targetRow.panels.splice(targetPanelIdx + 1, 0, newPanel)
+      } else if (edge === 'top') {
+        state.rows.splice(targetRowIdx, 0, { id: rowId, panels: [newPanel] })
+      } else {
+        // 'bottom'
+        state.rows.splice(targetRowIdx + 1, 0, { id: rowId, panels: [newPanel] })
+      }
+
+      state.activePanelId = newPanelId
+    },
     toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen
     },
@@ -280,6 +430,8 @@ export const {
   addTab,
   removeTab,
   moveTab,
+  splitActiveTab,
+  moveTabToSplit,
   renameTab,
   toggleSidebar,
   openFolder,

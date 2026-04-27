@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext, createContext } from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab, toggleSidebar, toggleChat } from '../../store/workspaceSlice'
+import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab, moveTabToSplit, toggleSidebar, toggleChat } from '../../store/workspaceSlice'
 import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
@@ -11,7 +11,22 @@ import ChatPane from '../Chat/ChatPane'
 import LogViewer from '../LogViewer/LogViewer'
 import Sidebar from '../Sidebar/Sidebar'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { generateId } from '../../utils'
 import styles from './WorkspaceLayout.module.css'
+
+interface TabDragState {
+  isDraggingTab: boolean
+  startDrag: (tabId: string, sourcePanelId: string) => void
+  endDrag: () => void
+  dragData: { tabId: string; sourcePanelId: string } | null
+}
+
+const TabDragContext = createContext<TabDragState>({
+  isDraggingTab: false,
+  startDrag: () => {},
+  endDrag: () => {},
+  dragData: null,
+})
 
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
   const dispatch = useDispatch()
@@ -22,6 +37,7 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
   const [editingTitle, setEditingTitle] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { startDrag, endDrag } = useContext(TabDragContext)
 
   useEffect(() => {
     if (editingTabId && inputRef.current) {
@@ -59,6 +75,11 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
       JSON.stringify({ tabId, sourcePanelId: panel.id }),
     )
     e.dataTransfer.effectAllowed = 'move'
+    startDrag(tabId, panel.id)
+  }
+
+  function handleDragEnd() {
+    endDrag()
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -107,6 +128,7 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
             className={`${styles.tab} ${isActivePanel && panel.activeTabId === tab.id ? styles.activeTab : ''}`}
             draggable={editingTabId !== tab.id}
             onDragStart={(e) => handleDragStart(e, tab.id)}
+            onDragEnd={handleDragEnd}
             onClick={(e) => {
               e.stopPropagation()
               dispatch(setActiveTab({ panelId: panel.id, tabId: tab.id }))
@@ -192,6 +214,71 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
   }
 }
 
+const EDGES = ['left', 'right', 'top', 'bottom'] as const
+type Edge = (typeof EDGES)[number]
+
+function EdgeDropZones({ panel }: { panel: WorkspacePanel }) {
+  const dispatch = useDispatch()
+  const { isDraggingTab } = useContext(TabDragContext)
+  const [hoveredEdge, setHoveredEdge] = useState<Edge | null>(null)
+
+  if (!isDraggingTab) return null
+
+  function handleDragOver(e: React.DragEvent, edge: Edge) {
+    if (e.dataTransfer.types.includes('application/x-tab-drag')) {
+      e.preventDefault()
+      e.stopPropagation()
+      e.dataTransfer.dropEffect = 'move'
+      setHoveredEdge(edge)
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget as Node)) {
+      setHoveredEdge(null)
+    }
+  }
+
+  function handleDrop(e: React.DragEvent, edge: Edge) {
+    e.preventDefault()
+    e.stopPropagation()
+    setHoveredEdge(null)
+    try {
+      const raw = e.dataTransfer.getData('application/x-tab-drag')
+      if (!raw) return
+      const { tabId, sourcePanelId } = JSON.parse(raw) as { tabId: string; sourcePanelId: string }
+      if (tabId && sourcePanelId) {
+        dispatch(
+          moveTabToSplit({
+            tabId,
+            sourcePanelId,
+            targetPanelId: panel.id,
+            edge,
+            newPanelId: generateId('panel'),
+            newRowId: generateId('row'),
+          }),
+        )
+      }
+    } catch {
+      // ignore malformed drag data
+    }
+  }
+
+  return (
+    <>
+      {EDGES.map((edge) => (
+        <div
+          key={edge}
+          className={`${styles.edgeDropZone} ${styles[`edgeDropZone${edge.charAt(0).toUpperCase()}${edge.slice(1)}` as keyof typeof styles]} ${hoveredEdge === edge ? styles.edgeDropZoneHover : ''}`}
+          onDragOver={(e) => handleDragOver(e, edge)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, edge)}
+        />
+      ))}
+    </>
+  )
+}
+
 export default function WorkspaceLayout() {
   const rows = useSelector((state: RootState) => state.workspace.rows)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
@@ -200,86 +287,105 @@ export default function WorkspaceLayout() {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
+  const [isDraggingTab, setIsDraggingTab] = useState(false)
+  const dragDataRef = useRef<{ tabId: string; sourcePanelId: string } | null>(null)
+
+  const tabDragContextValue: TabDragState = {
+    isDraggingTab,
+    startDrag: (tabId, sourcePanelId) => {
+      setIsDraggingTab(true)
+      dragDataRef.current = { tabId, sourcePanelId }
+    },
+    endDrag: () => {
+      setIsDraggingTab(false)
+      dragDataRef.current = null
+    },
+    dragData: dragDataRef.current,
+  }
+
   const totalPanels = rows.reduce((sum, row) => sum + row.panels.length, 0)
 
   return (
-    <>
-      {/* Mobile: Sidebar drawer overlay */}
-      {isMobile && sidebarOpen && (
-        <>
-          <div
-            className={styles.mobileSidebarBackdrop}
-            onClick={() => dispatch(toggleSidebar())}
-          />
-          <div className={styles.mobileSidebarDrawer}>
-            <Sidebar />
-          </div>
-        </>
-      )}
-
-      {/* Mobile: Chat drawer overlay */}
-      {isMobile && chatOpen && (
-        <>
-          <div
-            className={styles.mobileChatBackdrop}
-            onClick={() => dispatch(toggleChat())}
-          />
-          <div className={styles.mobileChatDrawer}>
-            <ChatPane />
-          </div>
-        </>
-      )}
-
-      <PanelGroup direction="horizontal" className={styles.layout}>
-        {!isMobile && sidebarOpen && (
+    <TabDragContext.Provider value={tabDragContextValue}>
+      <>
+        {/* Mobile: Sidebar drawer overlay */}
+        {isMobile && sidebarOpen && (
           <>
-            <Panel defaultSize={18} minSize={12} maxSize={40} className={styles.sidebarPanel}>
+            <div
+              className={styles.mobileSidebarBackdrop}
+              onClick={() => dispatch(toggleSidebar())}
+            />
+            <div className={styles.mobileSidebarDrawer}>
               <Sidebar />
-            </Panel>
-            <PanelResizeHandle className={styles.resizeHandle} />
+            </div>
           </>
         )}
-        <Panel defaultSize={sidebarOpen && !isMobile ? 82 : 100} minSize={10} className={styles.contentArea}>
-          <PanelGroup direction="vertical" className={styles.innerLayout}>
-            {rows.map((row, rowIndex) => (
-              <React.Fragment key={row.id}>
-                <Panel defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
-                  <PanelGroup direction="horizontal" className={styles.innerLayout}>
-                    {row.panels.map((panel, panelIndex) => (
-                      <React.Fragment key={panel.id}>
-                        <Panel
-                          defaultSize={100 / row.panels.length}
-                          minSize={10}
-                          className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
-                          onClick={() => dispatch(setActivePanel(panel.id))}
-                        >
-                          <TabBar panel={panel} showClose={totalPanels > 1} />
-                          <div className={styles.panelBody}>
-                            <ActiveTabContent panel={panel} />
-                          </div>
-                        </Panel>
-                        {panelIndex < row.panels.length - 1 && (
-                          <PanelResizeHandle
-                            key={`handle-${panel.id}`}
-                            className={styles.resizeHandle}
-                          />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </PanelGroup>
-                </Panel>
-                {rowIndex < rows.length - 1 && (
-                  <PanelResizeHandle
-                    key={`row-handle-${row.id}`}
-                    className={styles.resizeHandleHorizontal}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </PanelGroup>
-        </Panel>
-        {!isMobile && chatOpen && <ChatPane />}
-      </PanelGroup>
-    </>
+
+        {/* Mobile: Chat drawer overlay */}
+        {isMobile && chatOpen && (
+          <>
+            <div
+              className={styles.mobileChatBackdrop}
+              onClick={() => dispatch(toggleChat())}
+            />
+            <div className={styles.mobileChatDrawer}>
+              <ChatPane />
+            </div>
+          </>
+        )}
+
+        <PanelGroup direction="horizontal" className={styles.layout}>
+          {!isMobile && sidebarOpen && (
+            <>
+              <Panel defaultSize={18} minSize={12} maxSize={40} className={styles.sidebarPanel}>
+                <Sidebar />
+              </Panel>
+              <PanelResizeHandle className={styles.resizeHandle} />
+            </>
+          )}
+          <Panel defaultSize={sidebarOpen && !isMobile ? 82 : 100} minSize={10} className={styles.contentArea}>
+            <PanelGroup direction="vertical" className={styles.innerLayout}>
+              {rows.map((row, rowIndex) => (
+                <React.Fragment key={row.id}>
+                  <Panel defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
+                    <PanelGroup direction="horizontal" className={styles.innerLayout}>
+                      {row.panels.map((panel, panelIndex) => (
+                        <React.Fragment key={panel.id}>
+                          <Panel
+                            defaultSize={100 / row.panels.length}
+                            minSize={10}
+                            className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
+                            onClick={() => dispatch(setActivePanel(panel.id))}
+                          >
+                            <TabBar panel={panel} showClose={totalPanels > 1} />
+                            <div className={styles.panelBody}>
+                              <ActiveTabContent panel={panel} />
+                              <EdgeDropZones panel={panel} />
+                            </div>
+                          </Panel>
+                          {panelIndex < row.panels.length - 1 && (
+                            <PanelResizeHandle
+                              key={`handle-${panel.id}`}
+                              className={styles.resizeHandle}
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </PanelGroup>
+                  </Panel>
+                  {rowIndex < rows.length - 1 && (
+                    <PanelResizeHandle
+                      key={`row-handle-${row.id}`}
+                      className={styles.resizeHandleHorizontal}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </PanelGroup>
+          </Panel>
+          {!isMobile && chatOpen && <ChatPane />}
+        </PanelGroup>
+      </>
+    </TabDragContext.Provider>
   )
 }
