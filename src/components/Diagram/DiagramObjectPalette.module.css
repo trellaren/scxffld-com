@@ -1,0 +1,124 @@
+.palette {
+  display: flex;
+  flex-direction: column;
+  background-color: #252526;
+  border-top: 1px solid #3c3c3c;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.toggleBtn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: #969696;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  height: 28px;
+  flex-shrink: 0;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.toggleBtn:hover {
+  background-color: #2d2d2d;
+  color: #cccccc;
+}
+
+.toggleIcon {
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-height: 100px;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #252526;
+}
+
+.itemList::-webkit-scrollbar {
+  height: 4px;
+}
+
+.itemList::-webkit-scrollbar-track {
+  background: #252526;
+}
+
+.itemList::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 2px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 6px 8px;
+  min-width: 64px;
+  max-width: 80px;
+  flex-shrink: 0;
+  transition: background-color 0.1s, border-color 0.1s;
+}
+
+.item:hover {
+  background-color: #2d2d2d;
+  border-color: #007acc;
+  color: #ffffff;
+}
+
+.item:hover .itemShape {
+  border-color: #007acc !important;
+}
+
+.itemPreview {
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.itemShape {
+  width: 28px;
+  height: 20px;
+  border: 1px solid #555;
+  background: #2d2d2d;
+  border-radius: 3px;
+  transition: border-color 0.1s;
+}
+
+.itemLabel {
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70px;
+  text-align: center;
+}

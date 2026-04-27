@@ -12,6 +12,7 @@ import 'reactflow/dist/style.css'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import { setDiagramData } from '../../store/workspaceSlice'
+import DiagramObjectPalette from './DiagramObjectPalette'
 import styles from './DiagramCanvas.module.css'
 
 const defaultNodes: Node[] = [
@@ -39,7 +40,7 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
   const dispatch = useDispatch()
   const savedData = useSelector((state: RootState) => state.workspace.diagramData[tabId])
 
-  const [nodes, , onNodesChange] = useNodesState(
+  const [nodes, setNodes, onNodesChange] = useNodesState(
     savedData ? (savedData.nodes as Node[]) : defaultNodes,
   )
   const [edges, setEdges, onEdgesChange] = useEdgesState(
@@ -55,23 +56,30 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
     dispatch(setDiagramData({ tabId, data: { nodes, edges } }))
   }, [dispatch, tabId, nodes, edges])
 
+  function handleAddNode(node: Node) {
+    setNodes((nds) => [...nds, node])
+  }
+
   return (
-    <div className={styles.canvas}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background color="#3c3c3c" />
-        <Controls />
-        <MiniMap
-          style={{ background: '#1e1e1e' }}
-          nodeColor="#555"
-        />
-      </ReactFlow>
+    <div className={styles.canvasWrapper}>
+      <div className={styles.canvas}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+        >
+          <Background color="#3c3c3c" />
+          <Controls />
+          <MiniMap
+            style={{ background: '#1e1e1e' }}
+            nodeColor="#555"
+          />
+        </ReactFlow>
+      </div>
+      <DiagramObjectPalette onAddNode={handleAddNode} />
     </div>
   )
 }

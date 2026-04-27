@@ -1,0 +1,105 @@
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #3c3c3c;
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 4px;
+  gap: 2px;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
+  color: #969696;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  height: 24px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.toggleBtn:hover {
+  background-color: #3c3c3c;
+  color: #cccccc;
+}
+
+.toggleBtnCollapsed {
+  color: #666666;
+}
+
+.toggleIcon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.toggleLabel {
+  font-size: 11px;
+}
+
+.toolbarButtons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1px;
+}
+
+.separator {
+  width: 1px;
+  height: 18px;
+  background-color: #3c3c3c;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.btn {
+  background: none;
+  border: 1px solid transparent;
+  color: #cccccc;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  height: 24px;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.btn:hover {
+  background-color: #3c3c3c;
+  color: #ffffff;
+  border-color: #555555;
+}
+
+.btnActive {
+  background-color: #094771;
+  color: #ffffff;
+  border-color: #007acc;
+}
+
+.btnActive:hover {
+  background-color: #0a5a8a;
+}
