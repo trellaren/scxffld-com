@@ -130,7 +130,8 @@ export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
 
   async function handleExport(format: ChatFormat) {
     setExportDropdownOpen(false)
-    const filename = `chat-${Date.now()}`
+    const date = new Date().toISOString().slice(0, 10)
+    const filename = `chat-${date}`
     switch (format) {
       case 'txt':
         exportChatAsTxt(storedMessages, `${filename}.txt`)
