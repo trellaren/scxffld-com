@@ -59,7 +59,12 @@ export default function Header() {
   }
 
   function handleNewTab(type: PanelType, title?: string) {
-    const defaultTitle = type === 'editor' ? 'New Text File' : type === 'diagram' ? 'New Diagram' : type === 'settings' ? 'Settings' : 'Panel'
+    const defaultTitle =
+      type === 'editor' ? 'New Text File' :
+      type === 'diagram' ? 'New Diagram' :
+      type === 'settings' ? 'Settings' :
+      type === 'log' ? 'App Log' :
+      'Panel'
     const tabTitle = title ?? defaultTitle
     if (activePanelId) {
       dispatch(
@@ -191,6 +196,11 @@ export default function Header() {
   function handleOpenSettings() {
     closeAll()
     dispatch(openSettings())
+  }
+
+  function handleViewLog() {
+    handleNewTab('log', 'App Log')
+    closeAll()
   }
 
   function handleSaveProjectFile() {
@@ -397,6 +407,23 @@ export default function Header() {
                 </li>
                 <li className={styles.dropdownItemDisabled}>
                   Zoom Out
+                </li>
+              </ul>
+            )}
+          </div>
+
+          {/* Help menu */}
+          <div className={styles.menuWrapper}>
+            <button
+              className={`${styles.menuButton} ${activeMenu === 'help' ? styles.menuButtonActive : ''}`}
+              onClick={() => openMenu('help')}
+            >
+              Help
+            </button>
+            {activeMenu === 'help' && (
+              <ul className={styles.dropdown}>
+                <li className={styles.dropdownItem} onClick={handleViewLog}>
+                  View Log
                 </li>
               </ul>
             )}

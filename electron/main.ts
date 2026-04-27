@@ -15,6 +15,10 @@ function getWindowBoundsPath() {
   return path.join(app.getPath("userData"), "window-bounds.json");
 }
 
+function getLogFilePath() {
+  return path.join(app.getPath("userData"), "app.log");
+}
+
 interface SavedBounds {
   width: number;
   height: number;
@@ -48,6 +52,41 @@ function saveWindowBounds(win: BrowserWindow) {
 
 function toggleFocusedWindowDevTools() {
   BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools();
+}
+
+const LOG_LEVEL_PADDING = 5;
+
+function setupLogHandlers() {
+  // Write a session-start marker so sessions are visually separated in the file
+  try {
+    const marker = `\n=== Session started: ${new Date().toISOString()} ===\n`;
+    fs.appendFileSync(getLogFilePath(), marker, "utf-8");
+  } catch {
+    // non-critical
+  }
+
+  ipcMain.on(
+    "log:write",
+    (_event, data: { level: string; message: string; timestamp: string }) => {
+      try {
+        const levelTag = data.level.toUpperCase().padEnd(LOG_LEVEL_PADDING);
+        const line = `[${data.timestamp}] [${levelTag}] ${data.message}\n`;
+        fs.appendFileSync(getLogFilePath(), line, "utf-8");
+      } catch {
+        // non-critical
+      }
+    }
+  );
+
+  ipcMain.handle("log:getPath", () => getLogFilePath());
+
+  ipcMain.handle("log:read", () => {
+    try {
+      return fs.readFileSync(getLogFilePath(), "utf-8");
+    } catch {
+      return "";
+    }
+  });
 }
 
 function createAppMenu() {
@@ -127,6 +166,8 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  setupLogHandlers();
+
   if (isDev) {
     createAppMenu();
     globalShortcut.register("F12", toggleFocusedWindowDevTools);

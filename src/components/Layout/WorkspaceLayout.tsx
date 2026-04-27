@@ -8,6 +8,7 @@ import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
 import Settings from '../Settings/Settings'
 import ChatPane from '../Chat/ChatPane'
+import LogViewer from '../LogViewer/LogViewer'
 import Sidebar from '../Sidebar/Sidebar'
 import styles from './WorkspaceLayout.module.css'
 
@@ -179,6 +180,8 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
       return <Settings />
     case 'chat':
       return <ChatPane embedded />
+    case 'log':
+      return <LogViewer />
     default:
       return (
         <div className={styles.emptyPanel}>

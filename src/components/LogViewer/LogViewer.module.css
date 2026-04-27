@@ -1,0 +1,171 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1e1e1e;
+  font-family: 'Consolas', 'Courier New', monospace;
+  overflow: hidden;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  background-color: #252526;
+  border-bottom: 1px solid #3c3c3c;
+  flex-shrink: 0;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.toolbarTitle {
+  font-size: 12px;
+  color: #888888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.logPath {
+  color: #555555;
+  font-size: 11px;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.toolbarButton {
+  background: none;
+  border: 1px solid #555555;
+  border-radius: 3px;
+  color: #aaaaaa;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 2px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.toolbarButton:hover:not(:disabled) {
+  background-color: #3c3c3c;
+  color: #cccccc;
+}
+
+.toolbarButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Log list ─────────────────────────────────────────────────────────────── */
+.logList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.empty {
+  color: #555555;
+  font-size: 12px;
+  text-align: center;
+  padding: 24px;
+}
+
+.entry {
+  display: flex;
+  gap: 8px;
+  padding: 1px 10px;
+  font-size: 12px;
+  line-height: 1.65;
+  border-left: 2px solid transparent;
+}
+
+.entry:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.timestamp {
+  color: #555555;
+  flex-shrink: 0;
+  font-size: 11px;
+  min-width: 72px;
+}
+
+.level {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: bold;
+  width: 36px;
+}
+
+.message {
+  color: #cccccc;
+  flex: 1;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* ── Level variants ───────────────────────────────────────────────────────── */
+.entryLog {
+  border-left-color: #3c3c3c;
+}
+.entryLog .level {
+  color: #666666;
+}
+.entryLog .message {
+  color: #aaaaaa;
+}
+
+.entryInfo {
+  border-left-color: #4ec9b0;
+}
+.entryInfo .level {
+  color: #4ec9b0;
+}
+.entryInfo .message {
+  color: #9cdcfe;
+}
+
+.entryWarn {
+  border-left-color: #dcdcaa;
+}
+.entryWarn .level {
+  color: #dcdcaa;
+}
+.entryWarn .message {
+  color: #dcdcaa;
+}
+
+.entryError {
+  border-left-color: #f48771;
+}
+.entryError .level {
+  color: #f48771;
+}
+.entryError .message {
+  color: #f48771;
+}
+
+/* ── Log file view ───────────────────────────────────────────────────────── */
+.fileContent {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  background-color: #1e1e1e;
+}
+
+.fileContent pre {
+  color: #cccccc;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
