@@ -53,6 +53,10 @@ interface EditNodeState {
   label: string
 }
 
+// Approximate half-width / half-height of a default node used to centre the viewport
+const NODE_CENTER_OFFSET_X = 60
+const NODE_CENTER_OFFSET_Y = 20
+
 export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
   const dispatch = useDispatch()
   const savedData = useSelector((state: RootState) => state.workspace.diagramData[tabId])
@@ -88,7 +92,7 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
   }
 
   function handleFocusNode(node: Node) {
-    rfInstance?.setCenter(node.position.x + 60, node.position.y + 20, { zoom: 1.5, duration: 400 })
+    rfInstance?.setCenter(node.position.x + NODE_CENTER_OFFSET_X, node.position.y + NODE_CENTER_OFFSET_Y, { zoom: 1.5, duration: 400 })
   }
 
   function handlePaneContextMenu(event: React.MouseEvent) {

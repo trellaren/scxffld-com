@@ -272,6 +272,11 @@ export async function exportDiagramAsJpeg(
   }, 'image/jpeg', 0.92)
 }
 
+/**
+ * Export a diagram as a PDF file using jsPDF.
+ * Renders the diagram nodes/edges to an SVG, rasterises it to a canvas,
+ * then embeds the image into a landscape-oriented PDF page.
+ */
 export async function exportDiagramAsPdf(
   nodes: unknown[],
   edges: unknown[],
