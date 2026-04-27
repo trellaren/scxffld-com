@@ -9,6 +9,7 @@ import DiagramCanvas from '../Diagram/DiagramCanvas'
 import Settings from '../Settings/Settings'
 import ChatPane from '../Chat/ChatPane'
 import LogViewer from '../LogViewer/LogViewer'
+import ProjectsPane from '../Projects/ProjectsPane'
 import Sidebar from '../Sidebar/Sidebar'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { generateId } from '../../utils'
@@ -34,6 +35,7 @@ const TAB_DEFAULT_TITLES: Record<string, string> = {
   diagram: 'New Diagram',
   settings: 'Settings',
   log: 'App Log',
+  projects: 'Projects',
 }
 
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
@@ -233,6 +235,8 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
       return <ChatPane embedded tabId={activeTab.id} />
     case 'log':
       return <LogViewer />
+    case 'projects':
+      return <ProjectsPane />
     default:
       return (
         <div className={styles.emptyPanel}>

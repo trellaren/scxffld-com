@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings' | 'chat' | 'log'
+export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings' | 'chat' | 'log' | 'projects'
 
 export interface Tab {
   id: string
@@ -57,8 +57,8 @@ const initialState: WorkspaceState = {
         {
           id: 'panel-1',
           tabs: [
-            { id: 'tab-1', type: 'editor', title: 'Document 1' },
-            { id: 'tab-2', type: 'diagram', title: 'Diagram 1' },
+            { id: 'tab-1', type: 'chat', title: 'Chat' },
+            { id: 'tab-2', type: 'projects', title: 'Projects' },
           ],
           activeTabId: 'tab-1',
         },

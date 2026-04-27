@@ -262,6 +262,8 @@ export default function Header() {
               <button className={styles.mobileMenuItem} onClick={() => handleNewTab('chat')}>New Chat</button>
               <button className={styles.mobileMenuItem} onClick={handleOpenFile}>Open File</button>
               <button className={styles.mobileMenuItem} onClick={handleOpenFolder}>Open Folder</button>
+              <button className={styles.mobileMenuItem} onClick={() => handleNewTab('projects')}>Create Project</button>
+              <button className={styles.mobileMenuItem} onClick={handleOpenFolder}>Open Project</button>
               <button
                 className={activeTab ? styles.mobileMenuItem : styles.mobileMenuItemDisabled}
                 onClick={activeTab ? handleSaveAs : undefined}
@@ -377,6 +379,13 @@ export default function Header() {
                 </li>
                 <li className={styles.dropdownItem} onClick={handleOpenFolder}>
                   Open Folder
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={() => handleNewTab('projects')}>
+                  Create Project
+                </li>
+                <li className={styles.dropdownItem} onClick={handleOpenFolder}>
+                  Open Project
                 </li>
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItemDisabled}>
