@@ -4,16 +4,15 @@ import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
 import {
   addPanel,
-  addPanelToRow,
-  addRowWithPanel,
   addTab,
+  splitActiveTab,
   toggleSidebar,
   openFolder,
   closeFolder,
   toggleChat,
   loadProjectFile,
 } from '../../store/workspaceSlice'
-import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspaceSlice'
+import type { PanelType, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline, loadTimeline } from '../../store/timelineSlice'
 import type { TimelineItem } from '../../store/timelineSlice'
 import { openSettings, updateTheme, AVAILABLE_THEMES } from '../../store/settingsSlice'
@@ -47,8 +46,6 @@ export default function Header() {
   // Derive the active tab from the active panel
   const activePanel = panels.find((p) => p.id === activePanelId) ?? null
   const activeTab = activePanel?.tabs.find((t) => t.id === activePanel.activeTabId) ?? null
-  const activeRow: PanelRow | null =
-    rows.find((row) => row.panels.some((p) => p.id === activePanelId)) ?? null
 
   function openMenu(name: string) {
     setActiveMenu((prev) => (prev === name ? null : name))
@@ -159,33 +156,12 @@ export default function Header() {
   }
 
   function handleSplitRight() {
-    const tabId = generateId('tab')
-    const newPanel: Panel = {
-      id: generateId('panel'),
-      tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
-      activeTabId: tabId,
-    }
-    if (activeRow) {
-      dispatch(addPanelToRow({ rowId: activeRow.id, panel: newPanel }))
-    } else {
-      dispatch(addRowWithPanel({ row: { id: generateId('row'), panels: [newPanel] }, afterRowId: null }))
-    }
+    dispatch(splitActiveTab({ direction: 'right', newPanelId: generateId('panel') }))
     closeAll()
   }
 
   function handleSplitDown() {
-    const tabId = generateId('tab')
-    const newPanel: Panel = {
-      id: generateId('panel'),
-      tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
-      activeTabId: tabId,
-    }
-    dispatch(
-      addRowWithPanel({
-        row: { id: generateId('row'), panels: [newPanel] },
-        afterRowId: activeRow?.id ?? null,
-      }),
-    )
+    dispatch(splitActiveTab({ direction: 'down', newPanelId: generateId('panel'), newRowId: generateId('row') }))
     closeAll()
   }
 
