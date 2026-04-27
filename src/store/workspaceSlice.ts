@@ -33,6 +33,7 @@ export interface WorkspaceState {
   splitDirection: 'horizontal' | 'vertical'
   openFolderName: string | null
   openFolderFiles: FileEntry[]
+  activePath: string | null
   diagramData: Record<string, DiagramData>
 }
 
@@ -52,6 +53,7 @@ const initialState: WorkspaceState = {
   splitDirection: 'horizontal',
   openFolderName: null,
   openFolderFiles: [],
+  activePath: null,
   diagramData: {},
 }
 
@@ -146,6 +148,7 @@ const workspaceSlice = createSlice({
     closeFolder(state) {
       state.openFolderName = null
       state.openFolderFiles = []
+      state.activePath = null
     },
     addFolderEntry(state, action: PayloadAction<FileEntry>) {
       state.openFolderFiles.push(action.payload)
@@ -178,6 +181,9 @@ const workspaceSlice = createSlice({
           })
       }
     },
+    setActivePath(state, action: PayloadAction<string | null>) {
+      state.activePath = action.payload
+    },
     setDiagramData(state, action: PayloadAction<{ tabId: string; data: DiagramData }>) {
       state.diagramData[action.payload.tabId] = action.payload.data
     },
@@ -200,6 +206,7 @@ export const {
   addFolderEntry,
   removeFolderEntry,
   renameFolderEntry,
+  setActivePath,
   setDiagramData,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer

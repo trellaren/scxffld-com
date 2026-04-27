@@ -11,6 +11,7 @@ import {
   addFolderEntry,
   removeFolderEntry,
   renameFolderEntry,
+  setActivePath,
 } from '../../store/workspaceSlice'
 import type { Tab, FileEntry } from '../../store/workspaceSlice'
 import { generateId } from '../../utils'
@@ -55,6 +56,7 @@ export default function Sidebar() {
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
   const openFolderFiles = useSelector((state: RootState) => state.workspace.openFolderFiles)
+  const activePath = useSelector((state: RootState) => state.workspace.activePath)
 
   const [projectExpanded, setProjectExpanded] = useState(true)
   const [folderExpanded, setFolderExpanded] = useState(true)
@@ -110,10 +112,11 @@ export default function Sidebar() {
   }
 
   function addVirtualEntry(name: string, kind: 'file' | 'folder', parentPath?: string) {
-    const path = parentPath ? `${parentPath}/${name}` : name
+    const effectiveParent = parentPath ?? activePath ?? undefined
+    const path = effectiveParent ? `${effectiveParent}/${name}` : name
     const entry: FileEntry = { name, path, kind, virtual: true }
     dispatch(addFolderEntry(entry))
-    if (parentPath) setExpandedFolders((prev) => new Set([...prev, parentPath]))
+    if (effectiveParent) setExpandedFolders((prev) => new Set([...prev, effectiveParent]))
     startRenameEntry(path, name)
   }
 
@@ -124,6 +127,11 @@ export default function Sidebar() {
       else next.add(path)
       return next
     })
+  }
+
+  function getParentPath(path: string): string | null {
+    const lastSlash = path.lastIndexOf('/')
+    return lastSlash >= 0 ? path.slice(0, lastSlash) : null
   }
 
   // ── context menu builders ───────────────────────────────────────────────────
@@ -224,8 +232,13 @@ export default function Sidebar() {
         key={entry.path}
         className={`${styles.fileItem} ${indented ? styles.fileItemIndented : ''}`}
         onClick={() => {
-          if (entry.kind === 'folder') toggleFolderExpanded(entry.path)
-          else openTab('editor', entry.name)
+          if (entry.kind === 'folder') {
+            dispatch(setActivePath(entry.path))
+            toggleFolderExpanded(entry.path)
+          } else {
+            dispatch(setActivePath(getParentPath(entry.path)))
+            openTab('editor', entry.name)
+          }
         }}
         onContextMenu={(e) => handleEntryContextMenu(e, entry)}
         title={entry.path}
