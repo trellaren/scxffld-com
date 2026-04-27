@@ -52,3 +52,19 @@
     padding: 0 6px;
   }
 }
+
+/* Spinner for chat loading indicator */
+@keyframes statusSpinnerRotate {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: statusSpinnerRotate 0.7s linear infinite;
+  vertical-align: middle;
+}

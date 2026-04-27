@@ -161,6 +161,9 @@
 .messageBubbleTyping {
   font-style: italic;
   opacity: 0.6;
+  display: flex;
+  align-items: center;
+  min-height: 20px;
 }
 
 .input:disabled {
@@ -294,4 +297,31 @@
 .exportItem:hover {
   background-color: var(--selection, #094771);
   color: var(--text-primary, #ffffff);
+}
+
+/* Spinner animation */
+@keyframes chatSpinnerRotate {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-color, #3c3c3c);
+  border-top-color: var(--text-primary, #d4d4d4);
+  border-radius: 50%;
+  animation: chatSpinnerRotate 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.spinnerBtn {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: chatSpinnerRotate 0.7s linear infinite;
+  vertical-align: middle;
 }
