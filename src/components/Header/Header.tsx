@@ -197,6 +197,9 @@ export default function Header() {
         <SaveAsDialog activeTab={activeTab} onClose={() => setSaveAsOpen(false)} />
       )}
 
+      {/* Settings modal */}
+      {settingsOpen && <SettingsModal />}
+
       {/* Hidden file inputs */}
       <input
         ref={fileInputRef}
@@ -273,7 +276,7 @@ export default function Header() {
                   Close Window
                 </li>
                 <li className={styles.dropdownDivider} />
-                <li className={styles.dropdownItem} onClick={() => handleNewTab('empty', 'Settings')}>
+                <li className={styles.dropdownItem} onClick={handleOpenSettings}>
                   Settings
                 </li>
               </ul>
@@ -335,6 +338,10 @@ export default function Header() {
               <ul className={`${styles.dropdown} ${styles.dropdownRight}`}>
                 <li className={styles.dropdownItemDisabled}>
                   Signed in as <strong>{user?.username}</strong>
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={handleOpenSettings}>
+                  Settings
                 </li>
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItem} onClick={handleLogout}>
