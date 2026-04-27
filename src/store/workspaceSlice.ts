@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings'
+export type PanelType = 'editor' | 'diagram' | 'empty' | 'settings' | 'chat'
 
 export interface Tab {
   id: string
@@ -39,6 +39,7 @@ export interface WorkspaceState {
   openFolderFiles: FileEntry[]
   activePath: string | null
   diagramData: Record<string, DiagramData>
+  chatOpen: boolean
 }
 
 const initialState: WorkspaceState = {
@@ -63,6 +64,7 @@ const initialState: WorkspaceState = {
   openFolderFiles: [],
   activePath: null,
   diagramData: {},
+  chatOpen: false,
 }
 
 function findPanel(rows: PanelRow[], panelId: string): Panel | undefined {
@@ -258,6 +260,13 @@ const workspaceSlice = createSlice({
     setDiagramData(state, action: PayloadAction<{ tabId: string; data: DiagramData }>) {
       state.diagramData[action.payload.tabId] = action.payload.data
     },
+    toggleChat(state) {
+      state.chatOpen = !state.chatOpen
+    },
+    loadProjectFile(state, action: PayloadAction<{ openFolderName: string; openFolderFiles: FileEntry[] }>) {
+      state.openFolderName = action.payload.openFolderName
+      state.openFolderFiles = action.payload.openFolderFiles
+    },
   },
 })
 
@@ -280,5 +289,7 @@ export const {
   renameFolderEntry,
   setActivePath,
   setDiagramData,
+  toggleChat,
+  loadProjectFile,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer
