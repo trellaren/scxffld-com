@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import workspaceReducer from './workspaceSlice'
 import authReducer from './authSlice'
 import timelineReducer from './timelineSlice'
+import aiReducer from './aiSlice'
 import settingsReducer from './settingsSlice'
 
 export const store = configureStore({
@@ -9,6 +10,7 @@ export const store = configureStore({
     workspace: workspaceReducer,
     auth: authReducer,
     timeline: timelineReducer,
+    ai: aiReducer,
     settings: settingsReducer,
   },
 })

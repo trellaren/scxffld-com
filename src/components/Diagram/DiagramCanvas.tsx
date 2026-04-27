@@ -13,6 +13,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import { setDiagramData } from '../../store/workspaceSlice'
 import DiagramObjectPalette from './DiagramObjectPalette'
+import CloudIconPalette from './CloudIconPalette'
+import IconNode from './IconNode'
 import DiagramNodeTree from './DiagramNodeTree'
 import ContextMenu from '../ContextMenu/ContextMenu'
 import type { ContextMenuEntry } from '../ContextMenu/ContextMenu'
@@ -37,6 +39,8 @@ const defaultNodes: Node[] = [
 const defaultEdges: Edge[] = [{ id: 'e1-2', source: '1', target: '2', animated: true }]
 
 const DEFAULT_NODE_STYLE = { background: '#2d2d2d', color: '#d4d4d4', border: '1px solid #555' }
+
+const nodeTypes = { iconNode: IconNode }
 
 interface DiagramCanvasProps {
   tabId: string
@@ -173,6 +177,7 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
             onPaneContextMenu={handlePaneContextMenu}
             onNodeContextMenu={handleNodeContextMenu}
             onNodeDoubleClick={handleNodeDoubleClick}
+            nodeTypes={nodeTypes}
             fitView
           >
             <Background color="#3c3c3c" />
@@ -184,6 +189,7 @@ export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
           </ReactFlow>
         </div>
         <DiagramObjectPalette onAddNode={handleAddNode} />
+        <CloudIconPalette onAddNode={handleAddNode} />
       </div>
 
       {contextMenu && (

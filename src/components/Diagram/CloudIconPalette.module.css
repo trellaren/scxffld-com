@@ -1,0 +1,133 @@
+.palette {
+  display: flex;
+  flex-direction: column;
+  background-color: #252526;
+  border-top: 1px solid #3c3c3c;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggleBtn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: #969696;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  height: 28px;
+  flex-shrink: 0;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.toggleBtn:hover {
+  background-color: #2d2d2d;
+  color: #cccccc;
+}
+
+.toggleIcon {
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sectionToggleBtn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #888888;
+  font-size: 11px;
+  padding: 3px 16px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  height: 22px;
+  flex-shrink: 0;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.sectionToggleBtn:hover {
+  background-color: #2d2d2d;
+  color: #aaaaaa;
+}
+
+.sectionToggleIcon {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 6px 10px;
+}
+
+.iconBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 5px 4px;
+  transition: background-color 0.1s, border-color 0.1s;
+  min-width: 0;
+}
+
+.iconBtn:hover {
+  background-color: #2d2d2d;
+  border-color: #007acc;
+  color: #ffffff;
+}
+
+.iconWrapper {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconLabel {
+  font-size: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 58px;
+  text-align: center;
+  line-height: 1.2;
+}

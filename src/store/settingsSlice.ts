@@ -178,4 +178,15 @@ export const {
   loadSettingsFromJson,
 } = settingsSlice.actions
 
+export const AVAILABLE_THEMES = [
+  { id: 'dark', name: 'Dark' },
+  { id: 'light', name: 'Light' },
+  { id: 'hc-dark', name: 'High Contrast Dark' },
+  { id: 'hc-light', name: 'High Contrast Light' },
+  { id: 'unicorn', name: 'Unicorn Poop' },
+  { id: 'blue', name: 'Blue' },
+  { id: 'purple', name: 'Purple' },
+  { id: 'red', name: 'Red' },
+]
+
 export default settingsSlice.reducer

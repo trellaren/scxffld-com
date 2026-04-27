@@ -10,12 +10,15 @@ import {
   toggleSidebar,
   openFolder,
   closeFolder,
+  toggleChat,
+  loadProjectFile,
 } from '../../store/workspaceSlice'
 import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
-import { openSettings } from '../../store/settingsSlice'
-import { generateId } from '../../utils'
+import { openSettings, updateTheme, AVAILABLE_THEMES } from '../../store/settingsSlice'
+import { generateId, downloadProjectFile } from '../../utils'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
+import AiPrompt from './AiPrompt'
 import SettingsModal from '../SettingsModal/SettingsModal'
 import styles from './Header.module.css'
 
@@ -33,6 +36,9 @@ export default function Header() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
+  const projectFileInputRef = useRef<HTMLInputElement>(null)
+
+  const workspaceState = useSelector((state: RootState) => state.workspace)
 
   // Derive the active tab from the active panel
   const activePanel = panels.find((p) => p.id === activePanelId) ?? null
@@ -51,7 +57,7 @@ export default function Header() {
   }
 
   function handleNewTab(type: PanelType, title?: string) {
-    const defaultTitle = type === 'editor' ? 'New Text File' : type === 'diagram' ? 'New Diagram' : 'Panel'
+    const defaultTitle = type === 'editor' ? 'New Text File' : type === 'diagram' ? 'New Diagram' : type === 'settings' ? 'Settings' : 'Panel'
     const tabTitle = title ?? defaultTitle
     if (activePanelId) {
       dispatch(
@@ -185,6 +191,42 @@ export default function Header() {
     dispatch(openSettings())
   }
 
+  function handleSaveProjectFile() {
+    closeAll()
+    downloadProjectFile(workspaceState)
+  }
+
+  function handleOpenProjectFile() {
+    closeAll()
+    projectFileInputRef.current?.click()
+  }
+
+  function handleProjectFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const raw = JSON.parse(ev.target?.result as string) as unknown
+        if (
+          raw !== null &&
+          typeof raw === 'object' &&
+          'openFolderName' in raw &&
+          'openFolderFiles' in raw &&
+          typeof (raw as { openFolderName: unknown }).openFolderName === 'string' &&
+          Array.isArray((raw as { openFolderFiles: unknown }).openFolderFiles)
+        ) {
+          const data = raw as { openFolderName: string; openFolderFiles: FileEntry[] }
+          dispatch(loadProjectFile({ openFolderName: data.openFolderName, openFolderFiles: data.openFolderFiles }))
+        }
+      } catch {
+        // ignore invalid JSON
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
   return (
     <>
       {/* Overlay to close menus on outside click */}
@@ -207,8 +249,6 @@ export default function Header() {
         style={{ display: 'none' }}
         onChange={handleFileInputChange}
       />
-      {/* webkitdirectory is supported in all major browsers (Chrome, Firefox 50+, Safari, Edge).
-          The @ts-expect-error below suppresses React's missing typedef for this attribute. */}
       <input
         ref={folderInputRef}
         type="file"
@@ -217,6 +257,13 @@ export default function Header() {
         webkitdirectory=""
         multiple
         onChange={handleFolderInputChange}
+      />
+      <input
+        ref={projectFileInputRef}
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={handleProjectFileInputChange}
       />
 
       <header className={styles.header}>
@@ -266,6 +313,13 @@ export default function Header() {
                   Save All
                 </li>
                 <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={handleSaveProjectFile}>
+                  Save Project File
+                </li>
+                <li className={styles.dropdownItem} onClick={handleOpenProjectFile}>
+                  Open Project File
+                </li>
+                <li className={styles.dropdownDivider} />
                 <li
                   className={openFolderName ? styles.dropdownItem : styles.dropdownItemDisabled}
                   onClick={openFolderName ? handleCloseFolder : undefined}
@@ -299,6 +353,9 @@ export default function Header() {
                 <li className={styles.dropdownItem} onClick={() => { dispatch(toggleTimeline()); closeAll() }}>
                   Toggle Timeline
                 </li>
+                <li className={styles.dropdownItem} onClick={() => { dispatch(toggleChat()); closeAll() }}>
+                  Toggle Chat
+                </li>
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItem} onClick={handleSplitRight}>
                   Split Right
@@ -306,6 +363,20 @@ export default function Header() {
                 <li className={styles.dropdownItem} onClick={handleSplitDown}>
                   Split Down
                 </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItemDisabled}>
+                  Theme ▶
+                </li>
+                {AVAILABLE_THEMES.map((theme) => (
+                  <li
+                    key={theme.id}
+                    className={styles.dropdownItem}
+                    style={{ paddingLeft: 24 }}
+                    onClick={() => { dispatch(updateTheme({ activeTheme: theme.id })); closeAll() }}
+                  >
+                    {theme.name}
+                  </li>
+                ))}
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItemDisabled}>
                   Zoom In
@@ -317,6 +388,11 @@ export default function Header() {
             )}
           </div>
         </nav>
+
+        {/* AI Prompt – center of header */}
+        <div className={styles.centerSection}>
+          <AiPrompt />
+        </div>
 
         {/* User section */}
         <div className={styles.userSection}>

@@ -6,6 +6,8 @@ import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTa
 import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
+import Settings from '../Settings/Settings'
+import ChatPane from '../Chat/ChatPane'
 import Sidebar from '../Sidebar/Sidebar'
 import styles from './WorkspaceLayout.module.css'
 
@@ -173,6 +175,10 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
       return <ProseMirrorEditor tabId={activeTab.id} />
     case 'diagram':
       return <DiagramCanvas tabId={activeTab.id} />
+    case 'settings':
+      return <Settings />
+    case 'chat':
+      return <ChatPane embedded />
     default:
       return (
         <div className={styles.emptyPanel}>
@@ -186,6 +192,7 @@ export default function WorkspaceLayout() {
   const rows = useSelector((state: RootState) => state.workspace.rows)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const sidebarOpen = useSelector((state: RootState) => state.workspace.sidebarOpen)
+  const chatOpen = useSelector((state: RootState) => state.workspace.chatOpen)
   const dispatch = useDispatch()
 
   const totalPanels = rows.reduce((sum, row) => sum + row.panels.length, 0)
@@ -239,6 +246,7 @@ export default function WorkspaceLayout() {
           ))}
         </PanelGroup>
       </Panel>
+      {chatOpen && <ChatPane />}
     </PanelGroup>
   )
 }

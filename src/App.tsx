@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from './store'
 import WorkspaceLayout from './components/Layout/WorkspaceLayout'
@@ -9,6 +10,11 @@ import styles from './App.module.css'
 
 function App() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
+  const activeTheme = useSelector((state: RootState) => state.settings.settings.theme.activeTheme)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', activeTheme)
+  }, [activeTheme])
 
   if (!isAuthenticated) {
     return <LoginPage />
