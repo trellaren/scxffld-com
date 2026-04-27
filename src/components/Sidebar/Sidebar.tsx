@@ -144,7 +144,7 @@ export default function Sidebar() {
       { label: 'New Text File', onClick: () => openTab('editor', 'Untitled') },
       { label: 'New Diagram', onClick: () => openTab('diagram', 'Untitled Diagram') },
       'divider',
-      { label: 'Settings', onClick: () => openTab('settings', 'Settings') },
+      { label: 'AI Settings', onClick: () => openTab('settings', 'AI Settings') },
     ])
   }
 

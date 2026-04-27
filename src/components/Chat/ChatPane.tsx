@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import { toggleChat, addTab, addPanel } from '../../store/workspaceSlice'
+import { setSelectedModel } from '../../store/aiSlice'
 import { generateId } from '../../utils'
-import { sendChatMessage } from '../../services/aiApi'
+import { sendChatMessage, loadModel, unloadModel } from '../../services/aiApi'
 import type { ChatMessage } from '../../services/aiApi'
 import styles from './ChatPane.module.css'
 
@@ -26,6 +27,7 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const selectedConfig = modelConfigs.find((c) => c.id === selectedConfigId)
@@ -72,6 +74,20 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
     }
   }
 
+  function handleSelectModel(configId: string, modelId: string) {
+    const prevConfig = modelConfigs.find((c) => c.id === selectedConfigId)
+    const prevModelId = selectedModelId
+    if (prevConfig && prevModelId && (prevConfig.id !== configId || prevModelId !== modelId)) {
+      unloadModel(prevConfig, prevModelId).catch(() => {/* ignore */})
+    }
+    const nextConfig = modelConfigs.find((c) => c.id === configId)
+    if (nextConfig) {
+      loadModel(nextConfig, modelId).catch(() => {/* ignore */})
+    }
+    dispatch(setSelectedModel({ configId, modelId }))
+    setModelDropdownOpen(false)
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') handleSend()
   }
@@ -88,10 +104,47 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
 
   return (
     <div className={embedded ? styles.chatPaneEmbedded : styles.chatPane}>
+      {modelDropdownOpen && (
+        <div className={styles.dropdownOverlay} onClick={() => setModelDropdownOpen(false)} />
+      )}
       <div className={styles.header}>
-        <span className={styles.title}>
-          Chat{activeModelId ? ` — ${activeModelId}` : ''}
-        </span>
+        <div className={styles.modelSelectorWrapper}>
+          <button
+            className={styles.modelButton}
+            onClick={() => setModelDropdownOpen((prev) => !prev)}
+            title="Switch model"
+            aria-label="Switch AI model"
+          >
+            <span className={styles.modelLabel}>
+              {activeModelId ?? 'Select Model'}
+            </span>
+            <span className={styles.chevron}>▾</span>
+          </button>
+          {modelDropdownOpen && (
+            <ul className={styles.modelDropdown}>
+              {modelConfigs.map((cfg) =>
+                cfg.models.length > 0 ? (
+                  <li key={cfg.id} className={styles.modelGroup}>
+                    <div className={styles.modelGroupLabel}>{cfg.name}</div>
+                    {cfg.models.map((model) => (
+                      <div
+                        key={model}
+                        className={`${styles.modelItem} ${
+                          selectedConfigId === cfg.id && selectedModelId === model
+                            ? styles.modelItemSelected
+                            : ''
+                        }`}
+                        onClick={() => handleSelectModel(cfg.id, model)}
+                      >
+                        {model}
+                      </div>
+                    ))}
+                  </li>
+                ) : null,
+              )}
+            </ul>
+          )}
+        </div>
         <div className={styles.headerActions}>
           {!embedded && (
             <button
