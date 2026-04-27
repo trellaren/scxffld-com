@@ -1,33 +1,46 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
-import { toggleChat, addTab, addPanel } from '../../store/workspaceSlice'
+import { toggleChat, addTab, addPanel, setChatMessages, clearChatMessages } from '../../store/workspaceSlice'
+import type { ChatMessage as StoredMessage } from '../../store/workspaceSlice'
 import { setSelectedModel } from '../../store/aiSlice'
 import { generateId } from '../../utils'
 import { sendChatMessage, loadModel, unloadModel } from '../../services/aiApi'
 import type { ChatMessage } from '../../services/aiApi'
+import {
+  exportChatAsTxt,
+  exportChatAsJson,
+  exportChatAsDocx,
+  exportChatAsPdf,
+} from '../../utils/exportUtils'
 import styles from './ChatPane.module.css'
 
-interface Message {
-  role: 'user' | 'assistant'
-  text: string
-}
+type ChatFormat = 'txt' | 'json' | 'docx' | 'pdf'
 
 interface ChatPaneProps {
   embedded?: boolean
+  tabId?: string
 }
 
-export default function ChatPane({ embedded = false }: ChatPaneProps) {
+/** Session key for the floating (non-embedded) chat pane */
+const FLOATING_SESSION_ID = 'floating-chat'
+
+export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
   const dispatch = useDispatch()
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const modelConfigs = useSelector((state: RootState) => state.ai.modelConfigs)
   const selectedConfigId = useSelector((state: RootState) => state.ai.selectedModelConfigId)
   const selectedModelId = useSelector((state: RootState) => state.ai.selectedModelId)
 
-  const [messages, setMessages] = useState<Message[]>([])
+  const sessionId = tabId ?? FLOATING_SESSION_ID
+  const storedMessages = useSelector(
+    (state: RootState) => state.workspace.chatMessages[sessionId] ?? [],
+  )
+
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false)
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const selectedConfig = modelConfigs.find((c) => c.id === selectedConfigId)
@@ -36,23 +49,26 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [storedMessages])
 
   async function handleSend() {
     const text = input.trim()
     if (!text || sending) return
 
-    const userMessage: Message = { role: 'user', text }
-    const updatedMessages = [...messages, userMessage]
-    setMessages(updatedMessages)
+    const userMessage: StoredMessage = { role: 'user', text }
+    const updatedMessages = [...storedMessages, userMessage]
+    dispatch(setChatMessages({ sessionId, messages: updatedMessages }))
     setInput('')
     setSending(true)
 
     if (!selectedConfig || !activeModelId) {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', text: '⚠ No AI model selected. Please choose a model from the model selector.' },
-      ])
+      dispatch(setChatMessages({
+        sessionId,
+        messages: [
+          ...updatedMessages,
+          { role: 'assistant', text: '⚠ No AI model selected. Please choose a model from the model selector.' },
+        ],
+      }))
       setSending(false)
       return
     }
@@ -63,12 +79,18 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
         content: m.text,
       }))
       const reply = await sendChatMessage(selectedConfig, activeModelId, apiMessages)
-      setMessages((prev) => [...prev, { role: 'assistant', text: reply }])
+      dispatch(setChatMessages({
+        sessionId,
+        messages: [...updatedMessages, { role: 'assistant', text: reply }],
+      }))
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', text: '⚠ Agent unavailable. Please check your connection and API settings.' },
-      ])
+      dispatch(setChatMessages({
+        sessionId,
+        messages: [
+          ...updatedMessages,
+          { role: 'assistant', text: '⚠ Agent unavailable. Please check your connection and API settings.' },
+        ],
+      }))
     } finally {
       setSending(false)
     }
@@ -102,10 +124,36 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
     dispatch(toggleChat())
   }
 
+  function handleClearChat() {
+    dispatch(clearChatMessages(sessionId))
+  }
+
+  async function handleExport(format: ChatFormat) {
+    setExportDropdownOpen(false)
+    const filename = `chat-${Date.now()}`
+    switch (format) {
+      case 'txt':
+        exportChatAsTxt(storedMessages, `${filename}.txt`)
+        break
+      case 'json':
+        exportChatAsJson(storedMessages, `${filename}.json`)
+        break
+      case 'docx':
+        await exportChatAsDocx(storedMessages, `${filename}.docx`)
+        break
+      case 'pdf':
+        exportChatAsPdf(storedMessages, `${filename}.pdf`)
+        break
+    }
+  }
+
   return (
     <div className={embedded ? styles.chatPaneEmbedded : styles.chatPane}>
-      {modelDropdownOpen && (
-        <div className={styles.dropdownOverlay} onClick={() => setModelDropdownOpen(false)} />
+      {(modelDropdownOpen || exportDropdownOpen) && (
+        <div
+          className={styles.dropdownOverlay}
+          onClick={() => { setModelDropdownOpen(false); setExportDropdownOpen(false) }}
+        />
       )}
       <div className={styles.header}>
         <div className={styles.modelSelectorWrapper}>
@@ -146,6 +194,36 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
           )}
         </div>
         <div className={styles.headerActions}>
+          {storedMessages.length > 0 && (
+            <div className={styles.exportWrapper}>
+              <button
+                className={styles.actionBtn}
+                onClick={() => setExportDropdownOpen((prev) => !prev)}
+                title="Save chat"
+                aria-label="Save chat"
+              >
+                ⬇
+              </button>
+              {exportDropdownOpen && (
+                <ul className={styles.exportDropdown}>
+                  <li className={styles.exportItem} onClick={() => handleExport('txt')}>Plain Text (.txt)</li>
+                  <li className={styles.exportItem} onClick={() => handleExport('json')}>JSON (.json)</li>
+                  <li className={styles.exportItem} onClick={() => handleExport('docx')}>Word (.docx)</li>
+                  <li className={styles.exportItem} onClick={() => handleExport('pdf')}>PDF (.pdf)</li>
+                </ul>
+              )}
+            </div>
+          )}
+          {storedMessages.length > 0 && (
+            <button
+              className={styles.actionBtn}
+              onClick={handleClearChat}
+              title="Clear chat"
+              aria-label="Clear chat history"
+            >
+              🗑
+            </button>
+          )}
           {!embedded && (
             <button
               className={styles.actionBtn}
@@ -170,7 +248,7 @@ export default function ChatPane({ embedded = false }: ChatPaneProps) {
       </div>
 
       <div className={styles.messageList}>
-        {messages.map((msg, idx) => (
+        {storedMessages.map((msg, idx) => (
           <div
             key={idx}
             className={`${styles.message} ${msg.role === 'user' ? styles.messageUser : styles.messageAssistant}`}

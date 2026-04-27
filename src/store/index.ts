@@ -5,6 +5,7 @@ import timelineReducer from './timelineSlice'
 import aiReducer from './aiSlice'
 import settingsReducer from './settingsSlice'
 import logReducer from './logSlice'
+import { serializeAiState, AI_STORAGE_KEY } from './aiSlice'
 
 // High-frequency or purely internal actions that would make the log too noisy.
 const SILENT_ACTIONS = new Set([
@@ -39,6 +40,21 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(actionLogMiddleware),
+})
+
+// Persist AI state to localStorage whenever it changes so returning users
+// have their model configs and selected model available immediately on load.
+let lastAiState = store.getState().ai
+store.subscribe(() => {
+  const currentAiState = store.getState().ai
+  if (currentAiState !== lastAiState) {
+    lastAiState = currentAiState
+    try {
+      localStorage.setItem(AI_STORAGE_KEY, serializeAiState(currentAiState))
+    } catch {
+      // Ignore storage quota errors
+    }
+  }
 })
 
 export type RootState = ReturnType<typeof store.getState>

@@ -143,6 +143,7 @@ export default function Sidebar() {
     showContextMenu(e, [
       { label: 'New Text File', onClick: () => openTab('editor', 'Untitled') },
       { label: 'New Diagram', onClick: () => openTab('diagram', 'Untitled Diagram') },
+      { label: 'New Chat', onClick: () => openTab('chat', 'Chat') },
       'divider',
       { label: 'AI Settings', onClick: () => openTab('settings', 'AI Settings') },
     ])
@@ -152,6 +153,7 @@ export default function Sidebar() {
     showContextMenu(e, [
       { label: 'New Text File', onClick: () => openTab('editor', 'Untitled') },
       { label: 'New Diagram', onClick: () => openTab('diagram', 'Untitled Diagram') },
+      { label: 'New Chat', onClick: () => openTab('chat', 'Chat') },
     ])
   }
 

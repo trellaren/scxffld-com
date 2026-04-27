@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
 import { setSelectedModel } from '../../store/aiSlice'
-import { openSettings } from '../../store/settingsSlice'
 import { addPanel, addTab } from '../../store/workspaceSlice'
 import { generateId } from '../../utils'
 import { loadModel, unloadModel } from '../../services/aiApi'
@@ -29,9 +28,26 @@ export default function AiPrompt() {
 
   const hasAnyModels = modelConfigs.some((c) => c.models.length > 0)
 
+  function openAiSettingsTab() {
+    setModelDropdownOpen(false)
+    const tabId = generateId('tab')
+    if (activePanelId) {
+      dispatch(addTab({
+        panelId: activePanelId,
+        tab: { id: tabId, type: 'settings', title: 'Settings' },
+      }))
+    } else {
+      dispatch(addPanel({
+        id: generateId('panel'),
+        tabs: [{ id: tabId, type: 'settings', title: 'Settings' }],
+        activeTabId: tabId,
+      }))
+    }
+  }
+
   function handleFocus() {
     if (!hasAnyModels) {
-      dispatch(openSettings())
+      openAiSettingsTab()
       textareaRef.current?.blur()
       return
     }
@@ -60,7 +76,7 @@ export default function AiPrompt() {
   function handleSubmit() {
     if (!prompt.trim()) return
     if (!hasAnyModels) {
-      dispatch(openSettings())
+      openAiSettingsTab()
       return
     }
     // Open a chat tab
@@ -100,20 +116,7 @@ export default function AiPrompt() {
   }
 
   function handleOpenSettings() {
-    setModelDropdownOpen(false)
-    const tabId = generateId('tab')
-    if (activePanelId) {
-      dispatch(addTab({
-        panelId: activePanelId,
-        tab: { id: tabId, type: 'settings', title: 'Settings' },
-      }))
-    } else {
-      dispatch(addPanel({
-        id: generateId('panel'),
-        tabs: [{ id: tabId, type: 'settings', title: 'Settings' }],
-        activeTabId: tabId,
-      }))
-    }
+    openAiSettingsTab()
   }
 
   return (
@@ -144,7 +147,7 @@ export default function AiPrompt() {
               className={styles.modelButton}
               onClick={() => {
                 if (!hasAnyModels) {
-                  dispatch(openSettings())
+                  openAiSettingsTab()
                 } else {
                   setModelDropdownOpen((prev) => !prev)
                 }

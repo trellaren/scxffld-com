@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, useContext, createContext } from 'r
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab, moveTabToSplit, toggleSidebar, toggleChat } from '../../store/workspaceSlice'
-import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
+import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab, moveTabToSplit, toggleSidebar, toggleChat, addTab } from '../../store/workspaceSlice'
+import type { Panel as WorkspacePanel, PanelType } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
 import Settings from '../Settings/Settings'
@@ -28,6 +28,12 @@ const TabDragContext = createContext<TabDragState>({
   dragData: null,
 })
 
+const NEW_TAB_OPTIONS: { type: PanelType; label: string; defaultTitle: string }[] = [
+  { type: 'chat', label: '💬 New Chat', defaultTitle: 'Chat' },
+  { type: 'editor', label: '📄 New Document', defaultTitle: 'New Text File' },
+  { type: 'diagram', label: '🔷 New Diagram', defaultTitle: 'New Diagram' },
+]
+
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
   const dispatch = useDispatch()
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
@@ -36,6 +42,7 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
+  const [addMenuOpen, setAddMenuOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const { startDrag, endDrag } = useContext(TabDragContext)
 
@@ -114,6 +121,11 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
     }
   }
 
+  function handleAddTab(type: PanelType, title: string) {
+    setAddMenuOpen(false)
+    dispatch(addTab({ panelId: panel.id, tab: { id: generateId('tab'), type, title } }))
+  }
+
   return (
     <div
       className={`${styles.tabBar} ${isDragOver ? styles.tabBarDragOver : ''}`}
@@ -166,6 +178,35 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
           </div>
         ))}
       </div>
+
+      {/* Add-tab (+) button */}
+      <div className={styles.addTabWrapper}>
+        {addMenuOpen && (
+          <div className={styles.addTabOverlay} onClick={() => setAddMenuOpen(false)} />
+        )}
+        <button
+          className={styles.addTabBtn}
+          onClick={(e) => { e.stopPropagation(); setAddMenuOpen((p) => !p) }}
+          title="New tab"
+          aria-label="New tab"
+        >
+          +
+        </button>
+        {addMenuOpen && (
+          <ul className={styles.addTabMenu}>
+            {NEW_TAB_OPTIONS.map((opt) => (
+              <li
+                key={opt.type}
+                className={styles.addTabMenuItem}
+                onClick={(e) => { e.stopPropagation(); handleAddTab(opt.type, opt.defaultTitle) }}
+              >
+                {opt.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {showClose && (
         <button
           className={styles.panelClose}
@@ -202,7 +243,7 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
     case 'settings':
       return <Settings />
     case 'chat':
-      return <ChatPane embedded />
+      return <ChatPane embedded tabId={activeTab.id} />
     case 'log':
       return <LogViewer />
     default:

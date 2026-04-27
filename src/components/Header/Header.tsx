@@ -62,6 +62,7 @@ export default function Header() {
     const defaultTitle =
       type === 'editor' ? 'New Text File' :
       type === 'diagram' ? 'New Diagram' :
+      type === 'chat' ? 'Chat' :
       type === 'settings' ? 'Settings' :
       type === 'log' ? 'App Log' :
       'Panel'
@@ -258,6 +259,7 @@ export default function Header() {
               <div className={styles.mobileMenuSectionTitle}>File</div>
               <button className={styles.mobileMenuItem} onClick={() => handleNewTab('editor')}>New Text File</button>
               <button className={styles.mobileMenuItem} onClick={() => handleNewTab('diagram')}>New Diagram</button>
+              <button className={styles.mobileMenuItem} onClick={() => handleNewTab('chat')}>New Chat</button>
               <button className={styles.mobileMenuItem} onClick={handleOpenFile}>Open File</button>
               <button className={styles.mobileMenuItem} onClick={handleOpenFolder}>Open Folder</button>
               <button
@@ -361,6 +363,9 @@ export default function Header() {
                 </li>
                 <li className={styles.dropdownItem} onClick={() => handleNewTab('diagram')}>
                   New Diagram
+                </li>
+                <li className={styles.dropdownItem} onClick={() => handleNewTab('chat')}>
+                  New Chat
                 </li>
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItem} onClick={handleNewWindow}>

@@ -13,11 +13,16 @@ import {
   exportDiagramAsPng,
   exportDiagramAsJpeg,
   exportDiagramAsPdf,
+  exportChatAsTxt,
+  exportChatAsJson,
+  exportChatAsDocx,
+  exportChatAsPdf,
 } from '../../utils/exportUtils'
 import styles from './SaveAsDialog.module.css'
 
 type TextFormat = 'txt' | 'json' | 'docx' | 'doc' | 'pdf'
 type DiagramFormat = 'json' | 'svg' | 'png' | 'jpeg' | 'pdf'
+type ChatFormat = 'txt' | 'json' | 'docx' | 'pdf'
 
 const TEXT_FORMATS: { value: TextFormat; label: string }[] = [
   { value: 'txt', label: 'Plain Text (.txt)' },
@@ -35,6 +40,13 @@ const DIAGRAM_FORMATS: { value: DiagramFormat; label: string }[] = [
   { value: 'pdf', label: 'PDF (.pdf)' },
 ]
 
+const CHAT_FORMATS: { value: ChatFormat; label: string }[] = [
+  { value: 'txt', label: 'Plain Text (.txt)' },
+  { value: 'json', label: 'JSON (.json)' },
+  { value: 'docx', label: 'Word Document (.docx)' },
+  { value: 'pdf', label: 'PDF (.pdf)' },
+]
+
 interface SaveAsDialogProps {
   activeTab: Tab | null
   onClose: () => void
@@ -42,8 +54,10 @@ interface SaveAsDialogProps {
 
 export default function SaveAsDialog({ activeTab, onClose }: SaveAsDialogProps) {
   const diagramData = useSelector((state: RootState) => state.workspace.diagramData)
+  const chatMessages = useSelector((state: RootState) => state.workspace.chatMessages)
 
   const isDiagram = activeTab?.type === 'diagram'
+  const isChat = activeTab?.type === 'chat'
   const baseTitle = activeTab?.title ?? 'file'
   // Strip any existing extension for the default filename stem
   const stem = baseTitle.replace(/\.[^/.]+$/, '')
@@ -51,6 +65,7 @@ export default function SaveAsDialog({ activeTab, onClose }: SaveAsDialogProps) 
   const [filename, setFilename] = useState(stem)
   const [textFormat, setTextFormat] = useState<TextFormat>('txt')
   const [diagramFormat, setDiagramFormat] = useState<DiagramFormat>('json')
+  const [chatFormat, setChatFormat] = useState<ChatFormat>('txt')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
@@ -79,6 +94,23 @@ export default function SaveAsDialog({ activeTab, onClose }: SaveAsDialogProps) 
             await exportDiagramAsPdf(nodes, edges, name)
             break
         }
+      } else if (isChat) {
+        const messages = chatMessages[activeTab.id] ?? []
+        const name = `${filename}.${chatFormat}`
+        switch (chatFormat) {
+          case 'txt':
+            exportChatAsTxt(messages, name)
+            break
+          case 'json':
+            exportChatAsJson(messages, name)
+            break
+          case 'docx':
+            await exportChatAsDocx(messages, name)
+            break
+          case 'pdf':
+            exportChatAsPdf(messages, name)
+            break
+        }
       } else {
         const name = `${filename}.${textFormat}`
         switch (textFormat) {
@@ -105,6 +137,15 @@ export default function SaveAsDialog({ activeTab, onClose }: SaveAsDialogProps) 
     }
   }
 
+  const formats = isDiagram ? DIAGRAM_FORMATS : isChat ? CHAT_FORMATS : TEXT_FORMATS
+  const selectedFormat = isDiagram ? diagramFormat : isChat ? chatFormat : textFormat
+
+  function handleFormatSelect(value: string) {
+    if (isDiagram) setDiagramFormat(value as DiagramFormat)
+    else if (isChat) setChatFormat(value as ChatFormat)
+    else setTextFormat(value as TextFormat)
+  }
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
@@ -122,19 +163,13 @@ export default function SaveAsDialog({ activeTab, onClose }: SaveAsDialogProps) 
 
         <div className={styles.label}>Format</div>
         <ul className={styles.formatList}>
-          {(isDiagram ? DIAGRAM_FORMATS : TEXT_FORMATS).map((fmt) => {
-            const selected = isDiagram
-              ? diagramFormat === fmt.value
-              : textFormat === fmt.value
+          {formats.map((fmt) => {
+            const selected = selectedFormat === fmt.value
             return (
               <li
                 key={fmt.value}
                 className={`${styles.formatItem} ${selected ? styles.formatItemSelected : ''}`}
-                onClick={() =>
-                  isDiagram
-                    ? setDiagramFormat(fmt.value as DiagramFormat)
-                    : setTextFormat(fmt.value as TextFormat)
-                }
+                onClick={() => handleFormatSelect(fmt.value)}
               >
                 {fmt.label}
               </li>
