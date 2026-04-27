@@ -172,6 +172,10 @@
   overflow: hidden;
 }
 
+.rowPanel {
+  overflow: hidden;
+}
+
 .innerLayout {
   height: 100%;
   width: 100%;

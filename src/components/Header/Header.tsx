@@ -4,13 +4,14 @@ import { RootState } from '../../store'
 import { logout } from '../../store/authSlice'
 import {
   addPanel,
+  addPanelToRow,
+  addRowWithPanel,
   addTab,
   toggleSidebar,
-  setSplitDirection,
   openFolder,
   closeFolder,
 } from '../../store/workspaceSlice'
-import type { PanelType, FileEntry } from '../../store/workspaceSlice'
+import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
 import { generateId } from '../../utils'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
@@ -20,7 +21,8 @@ export default function Header() {
   const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.auth.user)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
-  const panels = useSelector((state: RootState) => state.workspace.panels)
+  const rows = useSelector((state: RootState) => state.workspace.rows)
+  const panels = rows.flatMap((row) => row.panels)
   const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -32,6 +34,8 @@ export default function Header() {
   // Derive the active tab from the active panel
   const activePanel = panels.find((p) => p.id === activePanelId) ?? null
   const activeTab = activePanel?.tabs.find((t) => t.id === activePanel.activeTabId) ?? null
+  const activeRow: PanelRow | null =
+    rows.find((row) => row.panels.some((p) => p.id === activePanelId)) ?? null
 
   function openMenu(name: string) {
     setActiveMenu((prev) => (prev === name ? null : name))
@@ -113,25 +117,30 @@ export default function Header() {
 
   function handleSplitRight() {
     const tabId = generateId('tab')
-    dispatch(setSplitDirection('horizontal'))
-    dispatch(
-      addPanel({
-        id: generateId('panel'),
-        tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
-        activeTabId: tabId,
-      }),
-    )
+    const newPanel: Panel = {
+      id: generateId('panel'),
+      tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
+      activeTabId: tabId,
+    }
+    if (activeRow) {
+      dispatch(addPanelToRow({ rowId: activeRow.id, panel: newPanel }))
+    } else {
+      dispatch(addRowWithPanel({ row: { id: generateId('row'), panels: [newPanel] }, afterRowId: null }))
+    }
     closeAll()
   }
 
   function handleSplitDown() {
     const tabId = generateId('tab')
-    dispatch(setSplitDirection('vertical'))
+    const newPanel: Panel = {
+      id: generateId('panel'),
+      tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
+      activeTabId: tabId,
+    }
     dispatch(
-      addPanel({
-        id: generateId('panel'),
-        tabs: [{ id: tabId, type: 'empty', title: 'New Panel' }],
-        activeTabId: tabId,
+      addRowWithPanel({
+        row: { id: generateId('row'), panels: [newPanel] },
+        afterRowId: activeRow?.id ?? null,
       }),
     )
     closeAll()

@@ -14,6 +14,11 @@ export interface Panel {
   activeTabId: string | null
 }
 
+export interface PanelRow {
+  id: string
+  panels: Panel[]
+}
+
 export interface FileEntry {
   name: string
   path: string
@@ -27,32 +32,47 @@ export interface DiagramData {
 }
 
 export interface WorkspaceState {
-  panels: Panel[]
+  rows: PanelRow[]
   activePanelId: string | null
   sidebarOpen: boolean
-  splitDirection: 'horizontal' | 'vertical'
   openFolderName: string | null
   openFolderFiles: FileEntry[]
   diagramData: Record<string, DiagramData>
 }
 
 const initialState: WorkspaceState = {
-  panels: [
+  rows: [
     {
-      id: 'panel-1',
-      tabs: [
-        { id: 'tab-1', type: 'editor', title: 'Document 1' },
-        { id: 'tab-2', type: 'diagram', title: 'Diagram 1' },
+      id: 'row-1',
+      panels: [
+        {
+          id: 'panel-1',
+          tabs: [
+            { id: 'tab-1', type: 'editor', title: 'Document 1' },
+            { id: 'tab-2', type: 'diagram', title: 'Diagram 1' },
+          ],
+          activeTabId: 'tab-1',
+        },
       ],
-      activeTabId: 'tab-1',
     },
   ],
   activePanelId: 'panel-1',
   sidebarOpen: true,
-  splitDirection: 'horizontal',
   openFolderName: null,
   openFolderFiles: [],
   diagramData: {},
+}
+
+function findPanel(rows: PanelRow[], panelId: string): Panel | undefined {
+  for (const row of rows) {
+    const panel = row.panels.find((p) => p.id === panelId)
+    if (panel) return panel
+  }
+  return undefined
+}
+
+function findRowByPanelId(rows: PanelRow[], panelId: string): PanelRow | undefined {
+  return rows.find((row) => row.panels.some((p) => p.id === panelId))
 }
 
 const workspaceSlice = createSlice({
@@ -63,24 +83,68 @@ const workspaceSlice = createSlice({
       state.activePanelId = action.payload
     },
     setActiveTab(state, action: PayloadAction<{ panelId: string; tabId: string }>) {
-      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      const panel = findPanel(state.rows, action.payload.panelId)
       if (panel) {
         panel.activeTabId = action.payload.tabId
       }
       state.activePanelId = action.payload.panelId
     },
     addPanel(state, action: PayloadAction<Panel>) {
-      state.panels.push(action.payload)
+      // Add to the row containing the active panel, or to the first row,
+      // or create a new row if none exist.
+      if (state.activePanelId) {
+        const row = findRowByPanelId(state.rows, state.activePanelId)
+        if (row) {
+          row.panels.push(action.payload)
+          state.activePanelId = action.payload.id
+          return
+        }
+      }
+      if (state.rows.length > 0) {
+        state.rows[0].panels.push(action.payload)
+      } else {
+        state.rows.push({ id: `row-${Date.now()}`, panels: [action.payload] })
+      }
       state.activePanelId = action.payload.id
     },
+    addPanelToRow(state, action: PayloadAction<{ rowId: string; panel: Panel }>) {
+      const row = state.rows.find((r) => r.id === action.payload.rowId)
+      if (row) {
+        row.panels.push(action.payload.panel)
+        state.activePanelId = action.payload.panel.id
+      }
+    },
+    addRowWithPanel(state, action: PayloadAction<{ row: PanelRow; afterRowId: string | null }>) {
+      const { row, afterRowId } = action.payload
+      if (afterRowId) {
+        const idx = state.rows.findIndex((r) => r.id === afterRowId)
+        if (idx >= 0) {
+          state.rows.splice(idx + 1, 0, row)
+        } else {
+          state.rows.push(row)
+        }
+      } else {
+        state.rows.push(row)
+      }
+      const firstPanel = row.panels[0]
+      if (firstPanel) {
+        state.activePanelId = firstPanel.id
+      }
+    },
     removePanel(state, action: PayloadAction<string>) {
-      state.panels = state.panels.filter((p) => p.id !== action.payload)
+      const rowIdx = state.rows.findIndex((row) => row.panels.some((p) => p.id === action.payload))
+      if (rowIdx === -1) return
+      const row = state.rows[rowIdx]
+      row.panels = row.panels.filter((p) => p.id !== action.payload)
+      if (row.panels.length === 0) {
+        state.rows.splice(rowIdx, 1)
+      }
       if (state.activePanelId === action.payload) {
-        state.activePanelId = state.panels[0]?.id ?? null
+        state.activePanelId = state.rows[0]?.panels[0]?.id ?? null
       }
     },
     addTab(state, action: PayloadAction<{ panelId: string; tab: Tab }>) {
-      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      const panel = findPanel(state.rows, action.payload.panelId)
       if (panel) {
         panel.tabs.push(action.payload.tab)
         panel.activeTabId = action.payload.tab.id
@@ -88,7 +152,7 @@ const workspaceSlice = createSlice({
       state.activePanelId = action.payload.panelId
     },
     renameTab(state, action: PayloadAction<{ panelId: string; tabId: string; title: string }>) {
-      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      const panel = findPanel(state.rows, action.payload.panelId)
       if (panel) {
         const tab = panel.tabs.find((t) => t.id === action.payload.tabId)
         if (tab) {
@@ -97,7 +161,7 @@ const workspaceSlice = createSlice({
       }
     },
     removeTab(state, action: PayloadAction<{ panelId: string; tabId: string }>) {
-      const panel = state.panels.find((p) => p.id === action.payload.panelId)
+      const panel = findPanel(state.rows, action.payload.panelId)
       if (panel) {
         const idx = panel.tabs.findIndex((t) => t.id === action.payload.tabId)
         panel.tabs = panel.tabs.filter((t) => t.id !== action.payload.tabId)
@@ -113,8 +177,8 @@ const workspaceSlice = createSlice({
     ) {
       const { tabId, sourcePanelId, targetPanelId } = action.payload
       if (sourcePanelId === targetPanelId) return
-      const sourcePanel = state.panels.find((p) => p.id === sourcePanelId)
-      const targetPanel = state.panels.find((p) => p.id === targetPanelId)
+      const sourcePanel = findPanel(state.rows, sourcePanelId)
+      const targetPanel = findPanel(state.rows, targetPanelId)
       if (!sourcePanel || !targetPanel) return
       const tabIdx = sourcePanel.tabs.findIndex((t) => t.id === tabId)
       if (tabIdx === -1) return
@@ -124,9 +188,19 @@ const workspaceSlice = createSlice({
           sourcePanel.tabs[Math.max(0, tabIdx - 1)]?.id ?? sourcePanel.tabs[0]?.id ?? null
       }
       if (sourcePanel.tabs.length === 0) {
-        state.panels = state.panels.filter((p) => p.id !== sourcePanelId)
+        const rowIdx = state.rows.findIndex((row) =>
+          row.panels.some((p) => p.id === sourcePanelId),
+        )
+        if (rowIdx >= 0) {
+          state.rows[rowIdx].panels = state.rows[rowIdx].panels.filter(
+            (p) => p.id !== sourcePanelId,
+          )
+          if (state.rows[rowIdx].panels.length === 0) {
+            state.rows.splice(rowIdx, 1)
+          }
+        }
         if (state.activePanelId === sourcePanelId) {
-          state.activePanelId = state.panels[0]?.id ?? null
+          state.activePanelId = state.rows[0]?.panels[0]?.id ?? null
         }
       }
       targetPanel.tabs.push(tab)
@@ -135,9 +209,6 @@ const workspaceSlice = createSlice({
     },
     toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen
-    },
-    setSplitDirection(state, action: PayloadAction<'horizontal' | 'vertical'>) {
-      state.splitDirection = action.payload
     },
     openFolder(state, action: PayloadAction<{ name: string; files: FileEntry[] }>) {
       state.openFolderName = action.payload.name
@@ -188,13 +259,14 @@ export const {
   setActivePanel,
   setActiveTab,
   addPanel,
+  addPanelToRow,
+  addRowWithPanel,
   removePanel,
   addTab,
   removeTab,
   moveTab,
   renameTab,
   toggleSidebar,
-  setSplitDirection,
   openFolder,
   closeFolder,
   addFolderEntry,

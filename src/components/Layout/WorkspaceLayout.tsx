@@ -183,11 +183,12 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
 }
 
 export default function WorkspaceLayout() {
-  const panels = useSelector((state: RootState) => state.workspace.panels)
+  const rows = useSelector((state: RootState) => state.workspace.rows)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
   const sidebarOpen = useSelector((state: RootState) => state.workspace.sidebarOpen)
-  const splitDirection = useSelector((state: RootState) => state.workspace.splitDirection)
   const dispatch = useDispatch()
+
+  const totalPanels = rows.reduce((sum, row) => sum + row.panels.length, 0)
 
   return (
     <PanelGroup direction="horizontal" className={styles.layout}>
@@ -200,24 +201,38 @@ export default function WorkspaceLayout() {
         </>
       )}
       <Panel defaultSize={sidebarOpen ? 82 : 100} minSize={10} className={styles.contentArea}>
-        <PanelGroup direction={splitDirection} className={styles.innerLayout}>
-          {panels.map((panel, index) => (
-            <React.Fragment key={panel.id}>
-              <Panel
-                defaultSize={100 / panels.length}
-                minSize={10}
-                className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
-                onClick={() => dispatch(setActivePanel(panel.id))}
-              >
-                <TabBar panel={panel} showClose={panels.length > 1} />
-                <div className={styles.panelBody}>
-                  <ActiveTabContent panel={panel} />
-                </div>
+        <PanelGroup direction="vertical" className={styles.innerLayout}>
+          {rows.map((row, rowIndex) => (
+            <React.Fragment key={row.id}>
+              <Panel defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
+                <PanelGroup direction="horizontal" className={styles.innerLayout}>
+                  {row.panels.map((panel, panelIndex) => (
+                    <React.Fragment key={panel.id}>
+                      <Panel
+                        defaultSize={100 / row.panels.length}
+                        minSize={10}
+                        className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
+                        onClick={() => dispatch(setActivePanel(panel.id))}
+                      >
+                        <TabBar panel={panel} showClose={totalPanels > 1} />
+                        <div className={styles.panelBody}>
+                          <ActiveTabContent panel={panel} />
+                        </div>
+                      </Panel>
+                      {panelIndex < row.panels.length - 1 && (
+                        <PanelResizeHandle
+                          key={`handle-${panel.id}`}
+                          className={styles.resizeHandle}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </PanelGroup>
               </Panel>
-              {index < panels.length - 1 && (
+              {rowIndex < rows.length - 1 && (
                 <PanelResizeHandle
-                  key={`handle-${panel.id}`}
-                  className={splitDirection === 'vertical' ? styles.resizeHandleHorizontal : styles.resizeHandle}
+                  key={`row-handle-${row.id}`}
+                  className={styles.resizeHandleHorizontal}
                 />
               )}
             </React.Fragment>
