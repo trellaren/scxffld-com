@@ -122,9 +122,9 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
 
   switch (activeTab.type) {
     case 'editor':
-      return <ProseMirrorEditor />
+      return <ProseMirrorEditor tabId={activeTab.id} />
     case 'diagram':
-      return <DiagramCanvas />
+      return <DiagramCanvas tabId={activeTab.id} />
     default:
       return (
         <div className={styles.emptyPanel}>

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import ReactFlow, {
   addEdge,
   Background,
@@ -7,11 +7,14 @@ import ReactFlow, {
   useEdgesState,
   useNodesState,
 } from 'reactflow'
-import type { Connection } from 'reactflow'
+import type { Connection, Node, Edge } from 'reactflow'
 import 'reactflow/dist/style.css'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '../../store'
+import { setDiagramData } from '../../store/workspaceSlice'
 import styles from './DiagramCanvas.module.css'
 
-const initialNodes = [
+const defaultNodes: Node[] = [
   {
     id: '1',
     position: { x: 50, y: 50 },
@@ -26,16 +29,31 @@ const initialNodes = [
   },
 ]
 
-const initialEdges = [{ id: 'e1-2', source: '1', target: '2', animated: true }]
+const defaultEdges: Edge[] = [{ id: 'e1-2', source: '1', target: '2', animated: true }]
 
-export default function DiagramCanvas() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+interface DiagramCanvasProps {
+  tabId: string
+}
+
+export default function DiagramCanvas({ tabId }: DiagramCanvasProps) {
+  const dispatch = useDispatch()
+  const savedData = useSelector((state: RootState) => state.workspace.diagramData[tabId])
+
+  const [nodes, , onNodesChange] = useNodesState(
+    savedData ? (savedData.nodes as Node[]) : defaultNodes,
+  )
+  const [edges, setEdges, onEdgesChange] = useEdgesState(
+    savedData ? (savedData.edges as Edge[]) : defaultEdges,
+  )
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges],
   )
+
+  useEffect(() => {
+    dispatch(setDiagramData({ tabId, data: { nodes, edges } }))
+  }, [dispatch, tabId, nodes, edges])
 
   return (
     <div className={styles.canvas}>
