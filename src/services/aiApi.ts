@@ -165,8 +165,7 @@ export async function sendChatMessage(
   const { provider, endpoint, apiKey } = config
 
   switch (provider) {
-    case 'openai':
-    case 'lmstudio': {
+    case 'openai': {
       const base = endpoint || 'https://api.openai.com/v1'
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
@@ -179,6 +178,23 @@ export async function sendChatMessage(
         }),
       })
       if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
+      const json = await res.json()
+      return (json.choices as { message: { content: string } }[])[0]?.message?.content ?? ''
+    }
+
+    case 'lmstudio': {
+      const base = endpoint || 'http://localhost:1234'
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
+      const res = await fetch(`${base}/v1/chat`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: modelId,
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        }),
+      })
+      if (!res.ok) throw new Error(`LM Studio API error: ${res.status} ${res.statusText}`)
       const json = await res.json()
       return (json.choices as { message: { content: string } }[])[0]?.message?.content ?? ''
     }
