@@ -4,6 +4,7 @@ import {
   globalShortcut,
   ipcMain,
   Menu,
+  session,
   type MenuItemConstructorOptions,
 } from "electron";
 import path from "path";
@@ -56,6 +57,16 @@ function toggleFocusedWindowDevTools() {
 
 const LOG_LEVEL_PADDING = 5;
 
+/**
+ * Sanitize a log field by stripping newline and carriage-return characters to
+ * prevent log-injection attacks where a compromised renderer could embed fake
+ * log lines inside a single message.
+ */
+function sanitizeLogField(value: unknown): string {
+  if (typeof value !== "string") return String(value ?? "");
+  return value.replace(/[\r\n]/g, " ");
+}
+
 function setupLogHandlers() {
   // Write a session-start marker so sessions are visually separated in the file
   try {
@@ -69,8 +80,11 @@ function setupLogHandlers() {
     "log:write",
     (_event, data: { level: string; message: string; timestamp: string }) => {
       try {
-        const levelTag = data.level.toUpperCase().padEnd(LOG_LEVEL_PADDING);
-        const line = `[${data.timestamp}] [${levelTag}] ${data.message}\n`;
+        const level = sanitizeLogField(data.level);
+        const message = sanitizeLogField(data.message);
+        const timestamp = sanitizeLogField(data.timestamp);
+        const levelTag = level.toUpperCase().padEnd(LOG_LEVEL_PADDING);
+        const line = `[${timestamp}] [${levelTag}] ${message}\n`;
         fs.appendFileSync(getLogFilePath(), line, "utf-8");
       } catch {
         // non-critical
@@ -167,6 +181,32 @@ function createWindow() {
 
 app.whenReady().then(() => {
   setupLogHandlers();
+
+  // Apply a Content Security Policy to all web content served in the app.
+  // This limits where scripts, styles, and other resources can be loaded from,
+  // reducing the attack surface from any injected content.
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    // In development the Vite dev server runs on localhost; allow HTTP there.
+    // In production (packaged app) only HTTPS external connections are permitted.
+    const localhostConnect = isDev
+      ? " https://localhost:* http://localhost:*"
+      : " https://localhost:*";
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [
+          "default-src 'self';" +
+          " script-src 'self';" +
+          " style-src 'self' 'unsafe-inline';" +
+          " img-src 'self' data: blob:;" +
+          " font-src 'self' data:;" +
+          " connect-src 'self' https://api.openai.com https://api.anthropic.com" + localhostConnect + ";" +
+          " frame-src 'none';" +
+          " object-src 'none';"
+        ],
+      },
+    });
+  });
 
   if (isDev) {
     createAppMenu();

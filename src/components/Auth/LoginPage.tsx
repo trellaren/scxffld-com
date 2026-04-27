@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { useState, useRef, FormEvent } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '../../store'
 import { login, setAuthLoading, setAuthError } from '../../store/authSlice'
@@ -52,6 +52,10 @@ function MicrosoftIcon() {
 
 type Tab = 'signin' | 'register'
 
+// ── Rate-limit constants ──────────────────────────────────────────────────────
+const MAX_SIGN_IN_ATTEMPTS = 5
+const LOCKOUT_DURATION_MS = 60_000 // 60 seconds
+
 export default function LoginPage() {
   const dispatch = useDispatch()
   const authError = useSelector((state: RootState) => state.auth.authError)
@@ -63,6 +67,11 @@ export default function LoginPage() {
   const [siPassword, setSiPassword] = useState('')
   const [siError, setSiError] = useState('')
   const [siLoading, setSiLoading] = useState(false)
+
+  // Brute-force rate-limiting state (stored in refs so they survive re-renders
+  // without triggering an extra render cycle)
+  const failedAttemptsRef = useRef(0)
+  const lockoutUntilRef = useRef<number>(0)
 
   // Register form state
   const [regUsername, setRegUsername] = useState('')
@@ -87,9 +96,29 @@ export default function LoginPage() {
 
   // ── Sign In handler ─────────────────────────────────────────────────────────
 
+  /** Record a failed attempt and return the error message to display. */
+  function recordFailedAttempt(): string {
+    failedAttemptsRef.current += 1
+    if (failedAttemptsRef.current >= MAX_SIGN_IN_ATTEMPTS) {
+      lockoutUntilRef.current = Date.now() + LOCKOUT_DURATION_MS
+      failedAttemptsRef.current = 0
+      return 'Too many failed attempts. Please wait 60 seconds before trying again.'
+    }
+    return 'Invalid username/email or password.'
+  }
+
   async function handleSignIn(e: FormEvent) {
     e.preventDefault()
     setSiError('')
+
+    // Rate-limit: check if still locked out
+    const now = Date.now()
+    if (now < lockoutUntilRef.current) {
+      const secsLeft = Math.ceil((lockoutUntilRef.current - now) / 1000)
+      setSiError(`Too many failed attempts. Please wait ${secsLeft} second${secsLeft === 1 ? '' : 's'} before trying again.`)
+      return
+    }
+
     const identifier = siIdentifier.trim()
     if (!identifier) {
       setSiError('Username or email is required.')
@@ -103,16 +132,19 @@ export default function LoginPage() {
     try {
       const stored = findUserByEmail(identifier) ?? findUserByUsername(identifier)
       if (!stored) {
-        setSiError('Invalid username/email or password.')
+        setSiError(recordFailedAttempt())
         setSiLoading(false)
         return
       }
       const valid = await verifyPassword(siPassword, stored.passwordHash, stored.passwordSalt)
       if (!valid) {
-        setSiError('Invalid username/email or password.')
+        setSiError(recordFailedAttempt())
         setSiLoading(false)
         return
       }
+      // Successful sign-in — reset failure counter
+      failedAttemptsRef.current = 0
+      lockoutUntilRef.current = 0
       logger.info(`User signed in: ${stored.username}`)
       dispatch(
         login({
