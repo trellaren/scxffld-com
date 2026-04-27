@@ -42,3 +42,13 @@
   background-color: rgba(255, 255, 255, 0.3);
   flex-shrink: 0;
 }
+
+@media (max-width: 767px) {
+  .statusBar {
+    font-size: 11px;
+  }
+
+  .item {
+    padding: 0 6px;
+  }
+}

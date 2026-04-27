@@ -13,9 +13,17 @@
   border-radius: 6px;
   padding: 40px 36px;
   width: 360px;
+  max-width: calc(100% - 32px);
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+
+@media (max-width: 767px) {
+  .card {
+    padding: 28px 20px;
+    border-radius: 8px;
+  }
 }
 
 .logo {

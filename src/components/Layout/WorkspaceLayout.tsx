@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab } from '../../store/workspaceSlice'
+import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab, toggleSidebar, toggleChat } from '../../store/workspaceSlice'
 import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
@@ -10,6 +10,7 @@ import Settings from '../Settings/Settings'
 import ChatPane from '../Chat/ChatPane'
 import LogViewer from '../LogViewer/LogViewer'
 import Sidebar from '../Sidebar/Sidebar'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import styles from './WorkspaceLayout.module.css'
 
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
@@ -197,59 +198,88 @@ export default function WorkspaceLayout() {
   const sidebarOpen = useSelector((state: RootState) => state.workspace.sidebarOpen)
   const chatOpen = useSelector((state: RootState) => state.workspace.chatOpen)
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   const totalPanels = rows.reduce((sum, row) => sum + row.panels.length, 0)
 
   return (
-    <PanelGroup direction="horizontal" className={styles.layout}>
-      {sidebarOpen && (
+    <>
+      {/* Mobile: Sidebar drawer overlay */}
+      {isMobile && sidebarOpen && (
         <>
-          <Panel defaultSize={18} minSize={12} maxSize={40} className={styles.sidebarPanel}>
+          <div
+            className={styles.mobileSidebarBackdrop}
+            onClick={() => dispatch(toggleSidebar())}
+          />
+          <div className={styles.mobileSidebarDrawer}>
             <Sidebar />
-          </Panel>
-          <PanelResizeHandle className={styles.resizeHandle} />
+          </div>
         </>
       )}
-      <Panel defaultSize={sidebarOpen ? 82 : 100} minSize={10} className={styles.contentArea}>
-        <PanelGroup direction="vertical" className={styles.innerLayout}>
-          {rows.map((row, rowIndex) => (
-            <React.Fragment key={row.id}>
-              <Panel defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
-                <PanelGroup direction="horizontal" className={styles.innerLayout}>
-                  {row.panels.map((panel, panelIndex) => (
-                    <React.Fragment key={panel.id}>
-                      <Panel
-                        defaultSize={100 / row.panels.length}
-                        minSize={10}
-                        className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
-                        onClick={() => dispatch(setActivePanel(panel.id))}
-                      >
-                        <TabBar panel={panel} showClose={totalPanels > 1} />
-                        <div className={styles.panelBody}>
-                          <ActiveTabContent panel={panel} />
-                        </div>
-                      </Panel>
-                      {panelIndex < row.panels.length - 1 && (
-                        <PanelResizeHandle
-                          key={`handle-${panel.id}`}
-                          className={styles.resizeHandle}
-                        />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </PanelGroup>
-              </Panel>
-              {rowIndex < rows.length - 1 && (
-                <PanelResizeHandle
-                  key={`row-handle-${row.id}`}
-                  className={styles.resizeHandleHorizontal}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </PanelGroup>
-      </Panel>
-      {chatOpen && <ChatPane />}
-    </PanelGroup>
+
+      {/* Mobile: Chat drawer overlay */}
+      {isMobile && chatOpen && (
+        <>
+          <div
+            className={styles.mobileChatBackdrop}
+            onClick={() => dispatch(toggleChat())}
+          />
+          <div className={styles.mobileChatDrawer}>
+            <ChatPane />
+          </div>
+        </>
+      )}
+
+      <PanelGroup direction="horizontal" className={styles.layout}>
+        {!isMobile && sidebarOpen && (
+          <>
+            <Panel defaultSize={18} minSize={12} maxSize={40} className={styles.sidebarPanel}>
+              <Sidebar />
+            </Panel>
+            <PanelResizeHandle className={styles.resizeHandle} />
+          </>
+        )}
+        <Panel defaultSize={sidebarOpen && !isMobile ? 82 : 100} minSize={10} className={styles.contentArea}>
+          <PanelGroup direction="vertical" className={styles.innerLayout}>
+            {rows.map((row, rowIndex) => (
+              <React.Fragment key={row.id}>
+                <Panel defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
+                  <PanelGroup direction="horizontal" className={styles.innerLayout}>
+                    {row.panels.map((panel, panelIndex) => (
+                      <React.Fragment key={panel.id}>
+                        <Panel
+                          defaultSize={100 / row.panels.length}
+                          minSize={10}
+                          className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
+                          onClick={() => dispatch(setActivePanel(panel.id))}
+                        >
+                          <TabBar panel={panel} showClose={totalPanels > 1} />
+                          <div className={styles.panelBody}>
+                            <ActiveTabContent panel={panel} />
+                          </div>
+                        </Panel>
+                        {panelIndex < row.panels.length - 1 && (
+                          <PanelResizeHandle
+                            key={`handle-${panel.id}`}
+                            className={styles.resizeHandle}
+                          />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </PanelGroup>
+                </Panel>
+                {rowIndex < rows.length - 1 && (
+                  <PanelResizeHandle
+                    key={`row-handle-${row.id}`}
+                    className={styles.resizeHandleHorizontal}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </PanelGroup>
+        </Panel>
+        {!isMobile && chatOpen && <ChatPane />}
+      </PanelGroup>
+    </>
   )
 }
