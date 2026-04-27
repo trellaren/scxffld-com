@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, createContext } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useContext, createContext } from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
@@ -318,16 +318,32 @@ export default function WorkspaceLayout() {
   const [isDraggingTab, setIsDraggingTab] = useState(false)
   const dragDataRef = useRef<{ tabId: string; sourcePanelId: string } | null>(null)
 
+  // useCallback with empty deps is safe: setIsDraggingTab is a stable dispatcher
+  // and dragDataRef is a stable ref — no stale-closure risk.
+  const endDragFn = useCallback(() => {
+    setIsDraggingTab(false)
+    dragDataRef.current = null
+  }, [])
+
+  // Safety net: if dragend or drop fires anywhere on the document (including
+  // outside the window), make sure we always clear drag state so the edge-drop
+  // zones don't stay mounted and block future pointer events.
+  useEffect(() => {
+    document.addEventListener('dragend', endDragFn)
+    document.addEventListener('pointerup', endDragFn)
+    return () => {
+      document.removeEventListener('dragend', endDragFn)
+      document.removeEventListener('pointerup', endDragFn)
+    }
+  }, [endDragFn])
+
   const tabDragContextValue: TabDragState = {
     isDraggingTab,
     startDrag: (tabId, sourcePanelId) => {
       setIsDraggingTab(true)
       dragDataRef.current = { tabId, sourcePanelId }
     },
-    endDrag: () => {
-      setIsDraggingTab(false)
-      dragDataRef.current = null
-    },
+    endDrag: endDragFn,
     dragData: dragDataRef.current,
   }
 
@@ -375,11 +391,13 @@ export default function WorkspaceLayout() {
             <PanelGroup direction="vertical" className={styles.innerLayout}>
               {rows.map((row, rowIndex) => (
                 <React.Fragment key={row.id}>
-                  <Panel defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
+                  <Panel id={row.id} order={rowIndex} defaultSize={100 / rows.length} minSize={10} className={styles.rowPanel}>
                     <PanelGroup direction="horizontal" className={styles.innerLayout}>
                       {row.panels.map((panel, panelIndex) => (
                         <React.Fragment key={panel.id}>
                           <Panel
+                            id={panel.id}
+                            order={panelIndex}
                             defaultSize={100 / row.panels.length}
                             minSize={10}
                             className={`${styles.panel} ${activePanelId === panel.id ? styles.activePanel : ''}`}
@@ -393,7 +411,7 @@ export default function WorkspaceLayout() {
                           </Panel>
                           {panelIndex < row.panels.length - 1 && (
                             <PanelResizeHandle
-                              key={`handle-${panel.id}`}
+                              id={`handle-${panel.id}`}
                               className={styles.resizeHandle}
                             />
                           )}
@@ -403,7 +421,7 @@ export default function WorkspaceLayout() {
                   </Panel>
                   {rowIndex < rows.length - 1 && (
                     <PanelResizeHandle
-                      key={`row-handle-${row.id}`}
+                      id={`row-handle-${row.id}`}
                       className={styles.resizeHandleHorizontal}
                     />
                   )}
