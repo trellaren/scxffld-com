@@ -59,7 +59,7 @@
   max-width: 180px;
   font-size: 13px;
   color: var(--text-muted);
-  cursor: pointer;
+  cursor: grab;
   border-right: 1px solid var(--border-color);
   white-space: nowrap;
   overflow: hidden;
@@ -71,6 +71,10 @@
 .tab:hover {
   background-color: var(--bg-tertiary);
   color: var(--text-secondary);
+}
+
+.tab:active {
+  cursor: grabbing;
 }
 
 .tab:hover .tabClose {
@@ -285,7 +289,7 @@
   bottom: 0;
   left: 0;
   width: 25%;
-  cursor: w-resize;
+  cursor: crosshair;
 }
 
 .edgeDropZoneRight {
@@ -293,7 +297,7 @@
   bottom: 0;
   right: 0;
   width: 25%;
-  cursor: e-resize;
+  cursor: crosshair;
 }
 
 .edgeDropZoneTop {
@@ -301,7 +305,7 @@
   left: 0;
   right: 0;
   height: 25%;
-  cursor: n-resize;
+  cursor: crosshair;
 }
 
 .edgeDropZoneBottom {
@@ -309,7 +313,7 @@
   left: 0;
   right: 0;
   height: 25%;
-  cursor: s-resize;
+  cursor: crosshair;
 }
 
 .edgeDropZoneHover {
