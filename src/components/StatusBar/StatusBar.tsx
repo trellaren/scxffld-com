@@ -81,6 +81,10 @@ function labelForType(type: PanelType): string {
       return 'Diagram'
     case 'log':
       return 'Log'
+    case 'chat':
+      return 'Chat'
+    case 'settings':
+      return 'Settings'
     default:
       return 'Empty'
   }
@@ -89,6 +93,10 @@ function labelForType(type: PanelType): string {
 export default function StatusBar() {
   const rows = useSelector((state: RootState) => state.workspace.rows)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
+  const chatSending = useSelector((state: RootState) => state.workspace.chatSending)
+  const selectedModelId = useSelector((state: RootState) => state.ai.selectedModelId)
+  const selectedConfigId = useSelector((state: RootState) => state.ai.selectedModelConfigId)
+  const modelConfigs = useSelector((state: RootState) => state.ai.modelConfigs)
 
   const [stats, setStats] = useState<DocStats>(EMPTY_STATS)
   const [activeTabType, setActiveTabType] = useState<PanelType>('empty')
@@ -141,6 +149,11 @@ export default function StatusBar() {
   }, [activeTabId, activeTabType])
 
   const isEditor = activeTabType === 'editor'
+  const isChat = activeTabType === 'chat'
+
+  const selectedConfig = modelConfigs.find((c) => c.id === selectedConfigId)
+  const activeModelId = selectedModelId ?? selectedConfig?.models[0] ?? null
+  const chatModelLabel = activeModelId ?? 'No Model'
 
   return (
     <div className={styles.statusBar} role="status" aria-label="Document status">
@@ -164,7 +177,30 @@ export default function StatusBar() {
             </span>
           </>
         )}
-        {!isEditor && (
+        {isChat && (
+          <>
+            <span className={styles.item} title="Active model">
+              {chatModelLabel}
+            </span>
+            {chatSending && (
+              <>
+                <span className={styles.divider} />
+                <span className={styles.item} title="Waiting for response">
+                  <span className={styles.spinner} aria-label="Loading" />
+                </span>
+              </>
+            )}
+            {!chatSending && activeModelId && (
+              <>
+                <span className={styles.divider} />
+                <span className={styles.item} title="Model ready" aria-label="Model ready">
+                  ✓
+                </span>
+              </>
+            )}
+          </>
+        )}
+        {!isEditor && !isChat && (
           <span className={styles.item}>{labelForType(activeTabType)}</span>
         )}
       </div>

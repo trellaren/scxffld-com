@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
-import { toggleChat, addTab, addPanel, setChatMessages, clearChatMessages } from '../../store/workspaceSlice'
+import { toggleChat, addTab, addPanel, setChatMessages, clearChatMessages, setChatSending } from '../../store/workspaceSlice'
 import type { ChatMessage as StoredMessage } from '../../store/workspaceSlice'
 import { setSelectedModel } from '../../store/aiSlice'
 import { generateId } from '../../utils'
@@ -60,6 +60,7 @@ export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
     dispatch(setChatMessages({ sessionId, messages: updatedMessages }))
     setInput('')
     setSending(true)
+    dispatch(setChatSending(true))
 
     if (!selectedConfig || !activeModelId) {
       dispatch(setChatMessages({
@@ -70,6 +71,7 @@ export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
         ],
       }))
       setSending(false)
+      dispatch(setChatSending(false))
       return
     }
 
@@ -93,6 +95,7 @@ export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
       }))
     } finally {
       setSending(false)
+      dispatch(setChatSending(false))
     }
   }
 
@@ -259,7 +262,9 @@ export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
         ))}
         {sending && (
           <div className={`${styles.message} ${styles.messageAssistant}`}>
-            <div className={`${styles.messageBubble} ${styles.messageBubbleTyping}`}>…</div>
+            <div className={`${styles.messageBubble} ${styles.messageBubbleTyping}`}>
+              <span className={styles.spinner} aria-label="Waiting for response" />
+            </div>
           </div>
         )}
         <div ref={bottomRef} />
@@ -281,7 +286,7 @@ export default function ChatPane({ embedded = false, tabId }: ChatPaneProps) {
           disabled={!input.trim() || sending}
           aria-label="Send message"
         >
-          {sending ? '…' : 'Send'}
+          {sending ? <span className={styles.spinnerBtn} aria-label="Sending" /> : 'Send'}
         </button>
       </div>
     </div>

@@ -46,6 +46,7 @@ export interface WorkspaceState {
   diagramData: Record<string, DiagramData>
   chatOpen: boolean
   chatMessages: Record<string, ChatMessage[]>
+  chatSending: boolean
 }
 
 const initialState: WorkspaceState = {
@@ -72,6 +73,7 @@ const initialState: WorkspaceState = {
   diagramData: {},
   chatOpen: false,
   chatMessages: {},
+  chatSending: false,
 }
 
 function findPanel(rows: PanelRow[], panelId: string): Panel | undefined {
@@ -428,6 +430,9 @@ const workspaceSlice = createSlice({
     clearChatMessages(state, action: PayloadAction<string>) {
       delete state.chatMessages[action.payload]
     },
+    setChatSending(state, action: PayloadAction<boolean>) {
+      state.chatSending = action.payload
+    },
     toggleChat(state) {
       state.chatOpen = !state.chatOpen
     },
@@ -461,6 +466,7 @@ export const {
   setDiagramData,
   setChatMessages,
   clearChatMessages,
+  setChatSending,
   toggleChat,
   loadProjectFile,
 } = workspaceSlice.actions

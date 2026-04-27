@@ -133,6 +133,14 @@ function createAppMenu() {
 function createWindow() {
   const savedBounds = loadWindowBounds();
 
+  // Pick the appropriate icon for the current platform
+  const iconPath =
+    process.platform === "darwin"
+      ? path.join(__dirname, "../public/icons/icons.icns")
+      : process.platform === "win32"
+      ? path.join(__dirname, "../public/icons/icon.ico")
+      : path.join(__dirname, "../public/icons/128x128.png");
+
   const win = new BrowserWindow({
     width: savedBounds.width,
     height: savedBounds.height,
@@ -142,6 +150,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     frame: false,
+    icon: iconPath,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

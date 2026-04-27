@@ -28,11 +28,13 @@ const TabDragContext = createContext<TabDragState>({
   dragData: null,
 })
 
-const NEW_TAB_OPTIONS: { type: PanelType; label: string; defaultTitle: string }[] = [
-  { type: 'chat', label: '💬 New Chat', defaultTitle: 'Chat' },
-  { type: 'editor', label: '📄 New Document', defaultTitle: 'New Text File' },
-  { type: 'diagram', label: '🔷 New Diagram', defaultTitle: 'New Diagram' },
-]
+const TAB_DEFAULT_TITLES: Record<string, string> = {
+  chat: 'Chat',
+  editor: 'New Text File',
+  diagram: 'New Diagram',
+  settings: 'Settings',
+  log: 'App Log',
+}
 
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
   const dispatch = useDispatch()
@@ -42,7 +44,6 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
-  const [addMenuOpen, setAddMenuOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const { startDrag, endDrag } = useContext(TabDragContext)
 
@@ -121,8 +122,10 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
     }
   }
 
-  function handleAddTab(type: PanelType, title: string) {
-    setAddMenuOpen(false)
+  function handleAddTab() {
+    const activeTab = panel.tabs.find((t) => t.id === panel.activeTabId)
+    const type: PanelType = activeTab?.type ?? 'editor'
+    const title = TAB_DEFAULT_TITLES[type] ?? 'Panel'
     dispatch(addTab({ panelId: panel.id, tab: { id: generateId('tab'), type, title } }))
   }
 
@@ -181,30 +184,14 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
 
       {/* Add-tab (+) button */}
       <div className={styles.addTabWrapper}>
-        {addMenuOpen && (
-          <div className={styles.addTabOverlay} onClick={() => setAddMenuOpen(false)} />
-        )}
         <button
           className={styles.addTabBtn}
-          onClick={(e) => { e.stopPropagation(); setAddMenuOpen((p) => !p) }}
+          onClick={(e) => { e.stopPropagation(); handleAddTab() }}
           title="New tab"
           aria-label="New tab"
         >
           +
         </button>
-        {addMenuOpen && (
-          <ul className={styles.addTabMenu}>
-            {NEW_TAB_OPTIONS.map((opt) => (
-              <li
-                key={opt.type}
-                className={styles.addTabMenuItem}
-                onClick={(e) => { e.stopPropagation(); handleAddTab(opt.type, opt.defaultTitle) }}
-              >
-                {opt.label}
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
 
       {showClose && (
