@@ -1,0 +1,191 @@
+.aiPromptWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 480px;
+  min-width: 160px;
+  position: relative;
+  -webkit-app-region: no-drag;
+}
+
+.aiPromptBar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: #3c3c3c;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0 6px;
+  height: 26px;
+  transition: border-color 0.15s, height 0.15s;
+  overflow: hidden;
+}
+
+.aiPromptWrapper.expanded .aiPromptBar {
+  height: 72px;
+  align-items: flex-end;
+  padding-bottom: 6px;
+  border-color: #007acc;
+}
+
+.promptInput {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #cccccc;
+  font-size: 13px;
+  resize: none;
+  line-height: 1.4;
+  padding: 0;
+  height: 100%;
+  overflow-y: auto;
+  font-family: inherit;
+}
+
+.aiPromptWrapper.expanded .promptInput {
+  height: auto;
+  align-self: stretch;
+  padding-top: 6px;
+}
+
+.promptInput::placeholder {
+  color: #777777;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.aiPromptWrapper.expanded .controls {
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
+.modelSelectorWrapper {
+  position: relative;
+}
+
+.modelButton {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: #999999;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.modelButton:hover {
+  background-color: #4c4c4c;
+  color: #cccccc;
+}
+
+.modelLabel {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.modelDropdown {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  min-width: 180px;
+  list-style: none;
+  padding: 4px 0;
+  z-index: 400;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.modelGroup {
+  list-style: none;
+}
+
+.modelGroupLabel {
+  padding: 4px 12px 2px;
+  font-size: 11px;
+  color: #666666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modelItem {
+  padding: 5px 12px 5px 20px;
+  font-size: 13px;
+  color: #cccccc;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.1s;
+}
+
+.modelItem:hover {
+  background-color: #094771;
+  color: #ffffff;
+}
+
+.modelItemSelected {
+  color: #4fc3f7;
+}
+
+.modelDivider {
+  height: 1px;
+  background-color: #3c3c3c;
+  margin: 4px 0;
+  list-style: none;
+}
+
+.dropdownOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 390;
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #007acc;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  padding: 0;
+  line-height: 1;
+}
+
+.submitButton:hover {
+  background-color: #005f9e;
+}
+
+.submitButton:disabled {
+  background-color: #3c3c3c;
+  color: #666666;
+  cursor: default;
+}

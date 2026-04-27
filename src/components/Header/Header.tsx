@@ -15,6 +15,7 @@ import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspac
 import { toggleTimeline } from '../../store/timelineSlice'
 import { generateId } from '../../utils'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
+import AiPrompt from './AiPrompt'
 import styles from './Header.module.css'
 
 export default function Header() {
@@ -48,7 +49,7 @@ export default function Header() {
   }
 
   function handleNewTab(type: PanelType, title?: string) {
-    const defaultTitle = type === 'editor' ? 'New Text File' : type === 'diagram' ? 'New Diagram' : 'Panel'
+    const defaultTitle = type === 'editor' ? 'New Text File' : type === 'diagram' ? 'New Diagram' : type === 'settings' ? 'Settings' : 'Panel'
     const tabTitle = title ?? defaultTitle
     if (activePanelId) {
       dispatch(
@@ -265,7 +266,7 @@ export default function Header() {
                   Close Window
                 </li>
                 <li className={styles.dropdownDivider} />
-                <li className={styles.dropdownItem} onClick={() => handleNewTab('empty', 'Settings')}>
+                <li className={styles.dropdownItem} onClick={() => handleNewTab('settings', 'Settings')}>
                   Settings
                 </li>
               </ul>
@@ -306,6 +307,11 @@ export default function Header() {
             )}
           </div>
         </nav>
+
+        {/* AI Prompt – center of header */}
+        <div className={styles.centerSection}>
+          <AiPrompt />
+        </div>
 
         {/* User section */}
         <div className={styles.userSection}>

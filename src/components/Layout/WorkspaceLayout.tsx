@@ -6,6 +6,7 @@ import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTa
 import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
+import Settings from '../Settings/Settings'
 import Sidebar from '../Sidebar/Sidebar'
 import styles from './WorkspaceLayout.module.css'
 
@@ -173,6 +174,8 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
       return <ProseMirrorEditor tabId={activeTab.id} />
     case 'diagram':
       return <DiagramCanvas tabId={activeTab.id} />
+    case 'settings':
+      return <Settings />
     default:
       return (
         <div className={styles.emptyPanel}>

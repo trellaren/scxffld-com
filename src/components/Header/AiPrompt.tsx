@@ -29,7 +29,7 @@ export default function AiPrompt() {
     setExpanded(true)
   }
 
-  function handleBlur(e: React.FocusEvent<HTMLTextAreaElement>) {
+  function handleBlur() {
     // Keep expanded if there's content
     if (!prompt.trim()) {
       // Delay to allow click events on buttons
