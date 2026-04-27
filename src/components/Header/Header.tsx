@@ -93,11 +93,32 @@ export default function Header() {
     if (!files || files.length === 0) return
     const firstPath = (files[0] as File & { webkitRelativePath: string }).webkitRelativePath
     const folderName = firstPath ? firstPath.split('/')[0] : 'Folder'
-    const entries: FileEntry[] = Array.from(files).map((f) => {
+
+    // Build file entries from the selected files
+    const fileEntries: FileEntry[] = Array.from(files).map((f) => {
       const relativePath = (f as File & { webkitRelativePath: string }).webkitRelativePath
-      return { name: f.name, path: relativePath || f.name }
+      return { name: f.name, path: relativePath || f.name, kind: 'file' as const }
     })
-    dispatch(openFolder({ name: folderName, files: entries }))
+
+    // Synthesize folder entries for every intermediate directory so the
+    // sidebar tree mirrors the actual on-disk structure.  webkitdirectory
+    // only gives us File objects – no directory entries are included.
+    const seenFolderPaths = new Set<string>()
+    const folderEntries: FileEntry[] = []
+    for (const entry of fileEntries) {
+      const parts = entry.path.split('/')
+      // parts[0] is the root folder name itself (already represented by
+      // openFolderName), so we start synthesising from index 1.
+      for (let depth = 1; depth < parts.length - 1; depth++) {
+        const folderPath = parts.slice(0, depth + 1).join('/')
+        if (!seenFolderPaths.has(folderPath)) {
+          seenFolderPaths.add(folderPath)
+          folderEntries.push({ name: parts[depth], path: folderPath, kind: 'folder' })
+        }
+      }
+    }
+
+    dispatch(openFolder({ name: folderName, files: [...folderEntries, ...fileEntries] }))
     e.target.value = ''
   }
 
