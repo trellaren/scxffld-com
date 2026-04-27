@@ -13,9 +13,11 @@ import {
 } from '../../store/workspaceSlice'
 import type { PanelType, Panel, PanelRow, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
+import { openSettings } from '../../store/settingsSlice'
 import { generateId } from '../../utils'
 import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
 import AiPrompt from './AiPrompt'
+import SettingsModal from '../SettingsModal/SettingsModal'
 import styles from './Header.module.css'
 
 export default function Header() {
@@ -25,6 +27,7 @@ export default function Header() {
   const rows = useSelector((state: RootState) => state.workspace.rows)
   const panels = rows.flatMap((row) => row.panels)
   const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
+  const settingsOpen = useSelector((state: RootState) => state.settings.open)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [saveAsOpen, setSaveAsOpen] = useState(false)
@@ -178,6 +181,11 @@ export default function Header() {
     setSaveAsOpen(true)
   }
 
+  function handleOpenSettings() {
+    closeAll()
+    dispatch(openSettings())
+  }
+
   return (
     <>
       {/* Overlay to close menus on outside click */}
@@ -189,6 +197,9 @@ export default function Header() {
       {saveAsOpen && (
         <SaveAsDialog activeTab={activeTab} onClose={() => setSaveAsOpen(false)} />
       )}
+
+      {/* Settings modal */}
+      {settingsOpen && <SettingsModal />}
 
       {/* Hidden file inputs */}
       <input
@@ -266,7 +277,7 @@ export default function Header() {
                   Close Window
                 </li>
                 <li className={styles.dropdownDivider} />
-                <li className={styles.dropdownItem} onClick={() => handleNewTab('settings', 'Settings')}>
+                <li className={styles.dropdownItem} onClick={handleOpenSettings}>
                   Settings
                 </li>
               </ul>
@@ -333,6 +344,10 @@ export default function Header() {
               <ul className={`${styles.dropdown} ${styles.dropdownRight}`}>
                 <li className={styles.dropdownItemDisabled}>
                   Signed in as <strong>{user?.username}</strong>
+                </li>
+                <li className={styles.dropdownDivider} />
+                <li className={styles.dropdownItem} onClick={handleOpenSettings}>
+                  Settings
                 </li>
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItem} onClick={handleLogout}>

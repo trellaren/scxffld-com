@@ -3,6 +3,7 @@ import { RootState } from './store'
 import WorkspaceLayout from './components/Layout/WorkspaceLayout'
 import Header from './components/Header/Header'
 import TimelineMenu from './components/Timeline/TimelineMenu'
+import StatusBar from './components/StatusBar/StatusBar'
 import LoginPage from './components/Auth/LoginPage'
 import styles from './App.module.css'
 
@@ -20,6 +21,7 @@ function App() {
       <main className={styles.workspace}>
         <WorkspaceLayout />
       </main>
+      <StatusBar />
     </div>
   )
 }

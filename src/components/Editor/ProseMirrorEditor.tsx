@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
+import { Plugin } from 'prosemirror-state'
 import { DOMParser } from 'prosemirror-model'
 import { history, undo, redo } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
@@ -8,7 +9,7 @@ import { baseKeymap, toggleMark } from 'prosemirror-commands'
 import { wrapInList, liftListItem } from 'prosemirror-schema-list'
 import 'prosemirror-view/style/prosemirror.css'
 import styles from './ProseMirrorEditor.module.css'
-import { registerEditor, unregisterEditor } from '../../editorRegistry'
+import { registerEditor, unregisterEditor, notifyEditorStateChange } from '../../editorRegistry'
 import { editorSchema } from './schema'
 import EditorToolbar from './EditorToolbar'
 
@@ -41,6 +42,15 @@ export default function ProseMirrorEditor({ tabId }: ProseMirrorEditorProps) {
           'Shift-Tab': liftListItem(editorSchema.nodes.list_item),
         }),
         keymap(baseKeymap),
+        new Plugin({
+          view() {
+            return {
+              update(view) {
+                notifyEditorStateChange(tabId, view.state)
+              },
+            }
+          },
+        }),
       ],
     })
 

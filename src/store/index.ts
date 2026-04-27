@@ -3,6 +3,7 @@ import workspaceReducer from './workspaceSlice'
 import authReducer from './authSlice'
 import timelineReducer from './timelineSlice'
 import aiReducer from './aiSlice'
+import settingsReducer from './settingsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     auth: authReducer,
     timeline: timelineReducer,
     ai: aiReducer,
+    settings: settingsReducer,
   },
 })
 
