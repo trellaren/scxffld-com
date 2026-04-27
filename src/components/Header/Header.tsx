@@ -103,8 +103,10 @@ export default function Header() {
     const file = e.target.files?.[0]
     if (!file) return
     const ext = file.name.split('.').pop()?.toLowerCase()
+    const isPdf = ext === 'pdf'
+    const isDocx = ext === 'docx' || ext === 'doc'
     const isJson = ext === 'json'
-    const tabType: PanelType = isJson ? 'json' : 'editor'
+    const tabType: PanelType = isPdf ? 'pdf' : isDocx ? 'docx-viewer' : isJson ? 'json' : 'editor'
     const tabId = generateId('tab')
     if (activePanelId) {
       dispatch(addTab({ panelId: activePanelId, tab: { id: tabId, type: tabType, title: file.name } }))
@@ -116,7 +118,11 @@ export default function Header() {
       const content = ev.target?.result as string
       dispatch(setFileContent({ tabId, content }))
     }
-    reader.readAsText(file)
+    if (isPdf || isDocx) {
+      reader.readAsDataURL(file)
+    } else {
+      reader.readAsText(file)
+    }
     e.target.value = ''
     closeAll()
   }
@@ -200,6 +206,11 @@ export default function Header() {
   function handleOpenSettings() {
     closeAll()
     dispatch(openSettings())
+  }
+
+  function handleOpenAiSettings() {
+    closeAll()
+    handleNewTab('settings', 'AI Settings')
   }
 
   function handleViewLog() {
@@ -440,6 +451,9 @@ export default function Header() {
                 <li className={styles.dropdownDivider} />
                 <li className={styles.dropdownItem} onClick={handleOpenSettings}>
                   Settings
+                </li>
+                <li className={styles.dropdownItem} onClick={handleOpenAiSettings}>
+                  AI Settings
                 </li>
               </ul>
             )}

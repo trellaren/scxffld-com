@@ -37,6 +37,14 @@ function fileIcon(type: Tab['type']) {
   }
 }
 
+function getTabTypeFromFilename(filename: string): Tab['type'] {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  if (ext === 'pdf') return 'pdf'
+  if (ext === 'docx' || ext === 'doc') return 'docx-viewer'
+  if (ext === 'json') return 'json'
+  return 'editor'
+}
+
 function entryIcon(entry: FileEntry) {
   if (entry.kind === 'folder') return <i className="bi bi-folder" aria-hidden="true" />
   const ext = entry.name.split('.').pop()?.toLowerCase()
@@ -48,6 +56,8 @@ function entryIcon(entry: FileEntry) {
   if (ext === 'css') return <i className="bi bi-filetype-css" aria-hidden="true" />
   if (ext === 'html') return <i className="bi bi-filetype-html" aria-hidden="true" />
   if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'svg') return <i className="bi bi-file-image" aria-hidden="true" />
+  if (ext === 'pdf') return <i className="bi bi-file-earmark-pdf" aria-hidden="true" />
+  if (ext === 'doc' || ext === 'docx') return <i className="bi bi-file-earmark-word" aria-hidden="true" />
   if (ext === 'yaml' || ext === 'yml') return <i className="bi bi-file-earmark-code" aria-hidden="true" />
   if (ext === 'txt') return <i className="bi bi-file-text" aria-hidden="true" />
   return <i className="bi bi-file-earmark" aria-hidden="true" />
@@ -236,7 +246,8 @@ export default function Sidebar() {
       items.push({ label: 'New Subfolder', onClick: () => addVirtualEntry('New Folder', 'folder', entry.path) })
       items.push('divider')
     } else {
-      items.push({ label: 'Open', onClick: () => openTab('editor', entry.name) })
+      const tabType = getTabTypeFromFilename(entry.name)
+      items.push({ label: 'Open', onClick: () => openTab(tabType, entry.name) })
       items.push('divider')
     }
     items.push({ label: 'Rename', onClick: () => startRenameEntry(entry.path, entry.name) })
@@ -297,7 +308,7 @@ export default function Sidebar() {
             toggleFolderExpanded(entry.path)
           } else {
             dispatch(setActivePath(getParentPath(entry.path)))
-            openTab('editor', entry.name)
+            openTab(getTabTypeFromFilename(entry.name), entry.name)
           }
         }}
         onContextMenu={(e) => handleEntryContextMenu(e, entry)}

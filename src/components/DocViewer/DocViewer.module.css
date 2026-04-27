@@ -1,0 +1,86 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: auto;
+  background-color: var(--bg-primary, #1e1e1e);
+  padding: 24px 32px;
+  box-sizing: border-box;
+}
+
+.content {
+  max-width: 860px;
+  margin: 0 auto;
+  color: var(--text-primary, #cccccc);
+  font-size: 14px;
+  line-height: 1.7;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* Basic prose styles for mammoth-generated HTML */
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  color: var(--text-bright, #ffffff);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+  font-weight: 600;
+}
+
+.content p {
+  margin: 0.5em 0;
+}
+
+.content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.content td,
+.content th {
+  border: 1px solid var(--border-color, #3c3c3c);
+  padding: 6px 10px;
+}
+
+.content th {
+  background-color: var(--panel-bg, #252526);
+  font-weight: 600;
+}
+
+.content ul,
+.content ol {
+  padding-left: 1.6em;
+  margin: 0.5em 0;
+}
+
+.content strong,
+.content b {
+  color: var(--text-bright, #ffffff);
+}
+
+.content em,
+.content i {
+  font-style: italic;
+}
+
+.content a {
+  color: var(--accent-bg, #007acc);
+  text-decoration: underline;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted, #888888);
+  font-size: 13px;
+}
+
+.error {
+  color: var(--error-color, #f44336);
+}

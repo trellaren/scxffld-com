@@ -109,6 +109,10 @@
   align-content: start;
 }
 
+.templateCardWrapper {
+  position: relative;
+}
+
 .templateCard {
   display: flex;
   flex-direction: column;
@@ -121,6 +125,7 @@
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, background-color 0.15s, transform 0.1s;
+  width: 100%;
 }
 
 .templateCard:hover {
@@ -131,6 +136,37 @@
 
 .templateCard:active {
   transform: translateY(0);
+}
+
+.templateDeleteBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--panel-bg, #252526);
+  border: 1px solid var(--border-color, #3c3c3c);
+  border-radius: 50%;
+  color: var(--text-muted, #888888);
+  font-size: 10px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+
+.templateCardWrapper:hover .templateDeleteBtn {
+  opacity: 1;
+}
+
+.templateDeleteBtn:hover {
+  color: var(--text-bright, #ffffff);
+  background-color: var(--error-color, #f44336);
+  border-color: var(--error-color, #f44336);
 }
 
 .templateIcon {
