@@ -11,6 +11,8 @@ import ChatPane from '../Chat/ChatPane'
 import LogViewer from '../LogViewer/LogViewer'
 import ProjectsPane from '../Projects/ProjectsPane'
 import JsonViewer from '../JsonViewer/JsonViewer'
+import PdfViewer from '../PdfViewer/PdfViewer'
+import DocViewer from '../DocViewer/DocViewer'
 import Sidebar from '../Sidebar/Sidebar'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { generateId } from '../../utils'
@@ -38,6 +40,8 @@ const TAB_DEFAULT_TITLES: Record<string, string> = {
   log: 'App Log',
   projects: 'Projects',
   json: 'JSON File',
+  pdf: 'PDF',
+  'docx-viewer': 'Document',
 }
 
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
@@ -241,6 +245,10 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
       return <ProjectsPane />
     case 'json':
       return <JsonViewer tabId={activeTab.id} />
+    case 'pdf':
+      return <PdfViewer tabId={activeTab.id} />
+    case 'docx-viewer':
+      return <DocViewer tabId={activeTab.id} />
     default:
       return (
         <div className={styles.emptyPanel}>

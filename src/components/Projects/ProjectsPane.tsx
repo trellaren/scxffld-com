@@ -234,6 +234,12 @@ export default function ProjectsPane() {
     setSelectedTemplate(null)
   }
 
+  const DEFAULT_IDS = new Set(DEFAULT_TEMPLATES.map((t) => t.id))
+
+  function handleDeleteTemplate(id: string) {
+    setCustomTemplates((prev) => prev.filter((t) => t.id !== id))
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.toolbar}>
@@ -273,15 +279,26 @@ export default function ProjectsPane() {
           <div className={styles.emptyState}>No templates match "{search}"</div>
         ) : (
           filtered.map((template) => (
-            <button
-              key={template.id}
-              className={styles.templateCard}
-              onClick={() => setSelectedTemplate(template)}
-            >
-              <span className={styles.templateIcon}>{template.icon}</span>
-              <span className={styles.templateName}>{template.name}</span>
-              <span className={styles.templateDescription}>{template.description}</span>
-            </button>
+            <div key={template.id} className={styles.templateCardWrapper}>
+              <button
+                className={styles.templateCard}
+                onClick={() => setSelectedTemplate(template)}
+              >
+                <span className={styles.templateIcon}>{template.icon}</span>
+                <span className={styles.templateName}>{template.name}</span>
+                <span className={styles.templateDescription}>{template.description}</span>
+              </button>
+              {!DEFAULT_IDS.has(template.id) && (
+                <button
+                  className={styles.templateDeleteBtn}
+                  onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(template.id) }}
+                  title="Delete template"
+                  aria-label={`Delete ${template.name}`}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           ))
         )}
       </div>
