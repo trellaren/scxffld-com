@@ -106,7 +106,11 @@ export default function Header() {
     const isPdf = ext === 'pdf'
     const isDocx = ext === 'docx' || ext === 'doc'
     const isJson = ext === 'json'
-    const tabType: PanelType = isPdf ? 'pdf' : isDocx ? 'docx-viewer' : isJson ? 'json' : 'editor'
+    let tabType: PanelType
+    if (isPdf) tabType = 'pdf'
+    else if (isDocx) tabType = 'docx-viewer'
+    else if (isJson) tabType = 'json'
+    else tabType = 'editor'
     const tabId = generateId('tab')
     if (activePanelId) {
       dispatch(addTab({ panelId: activePanelId, tab: { id: tabId, type: tabType, title: file.name } }))
