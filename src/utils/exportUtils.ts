@@ -136,6 +136,12 @@ export function exportDiagramAsJson(
  * We rely on the Redux-stored node positions and labels rather than the live DOM
  * so the export works even when the diagram panel is not currently visible.
  */
+
+const EMPTY_DIAGRAM_WIDTH = 300
+const EMPTY_DIAGRAM_HEIGHT = 200
+const DIAGRAM_EXPORT_WIDTH = 800
+const DIAGRAM_EXPORT_HEIGHT = 600
+
 function buildDiagramSvg(nodes: unknown[], edges: unknown[]): string {
   type RFNode = { id: string; position: { x: number; y: number }; data?: { label?: string } }
   type RFEdge = { id: string; source: string; target: string }
@@ -156,7 +162,7 @@ function buildDiagramSvg(nodes: unknown[], edges: unknown[]): string {
     maxY = Math.max(maxY, n.position.y + nodeHeight)
   }
   if (rfNodes.length === 0) {
-    minX = 0; minY = 0; maxX = 300; maxY = 200
+    minX = 0; minY = 0; maxX = EMPTY_DIAGRAM_WIDTH; maxY = EMPTY_DIAGRAM_HEIGHT
   }
   const vbX = minX - padding
   const vbY = minY - padding
@@ -224,7 +230,12 @@ async function svgToCanvas(
       const canvas = document.createElement('canvas')
       canvas.width = width
       canvas.height = height
-      const ctx = canvas.getContext('2d')!
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        URL.revokeObjectURL(url)
+        reject(new Error('Unable to obtain 2D canvas context'))
+        return
+      }
       ctx.drawImage(img, 0, 0, width, height)
       URL.revokeObjectURL(url)
       resolve(canvas)
@@ -243,7 +254,7 @@ export async function exportDiagramAsPng(
   filename: string,
 ): Promise<void> {
   const svg = buildDiagramSvg(nodes, edges)
-  const canvas = await svgToCanvas(svg, 800, 600)
+  const canvas = await svgToCanvas(svg, DIAGRAM_EXPORT_WIDTH, DIAGRAM_EXPORT_HEIGHT)
   canvas.toBlob((blob) => {
     if (blob) downloadBlob(blob, filename)
   }, 'image/png')
@@ -255,7 +266,7 @@ export async function exportDiagramAsJpeg(
   filename: string,
 ): Promise<void> {
   const svg = buildDiagramSvg(nodes, edges)
-  const canvas = await svgToCanvas(svg, 800, 600)
+  const canvas = await svgToCanvas(svg, DIAGRAM_EXPORT_WIDTH, DIAGRAM_EXPORT_HEIGHT)
   canvas.toBlob((blob) => {
     if (blob) downloadBlob(blob, filename)
   }, 'image/jpeg', 0.92)

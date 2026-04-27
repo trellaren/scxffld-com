@@ -46,8 +46,7 @@ export default function ProseMirrorEditor({ tabId }: ProseMirrorEditorProps) {
       unregisterEditor(tabId)
       viewRef.current?.destroy()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tabId])
+  }, [tabId, registerEditor, unregisterEditor])
 
   return <div ref={editorRef} className={styles.editor} />
 }
