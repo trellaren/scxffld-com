@@ -1,0 +1,76 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-primary, #1e1e1e);
+  color: var(--text-primary, #cccccc);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--text-muted, #aaaaaa);
+}
+
+.toolbar i {
+  font-size: 15px;
+  color: var(--accent-bg, #007acc);
+}
+
+.toolbarTitle {
+  font-weight: 500;
+  color: var(--text-primary, #cccccc);
+}
+
+.errorBadge {
+  margin-left: auto;
+  color: #f44747;
+  font-size: 12px;
+}
+
+.scrollArea {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.pre {
+  margin: 0;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+  tab-size: 2;
+  color: var(--text-primary, #cccccc);
+}
+
+/* JSON syntax token colors */
+.tokenKey {
+  color: #9cdcfe;
+}
+
+.tokenString {
+  color: #ce9178;
+}
+
+.tokenNumber {
+  color: #b5cea8;
+}
+
+.tokenKeyword {
+  color: #569cd6;
+}
+
+.tokenPunctuation {
+  color: #888888;
+}
+
+.errorText {
+  color: #f44747;
+}

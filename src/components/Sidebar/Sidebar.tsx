@@ -23,25 +23,34 @@ import styles from './Sidebar.module.css'
 function fileIcon(type: Tab['type']) {
   switch (type) {
     case 'editor':
-      return '📄'
+      return <i className="bi bi-file-text" aria-hidden="true" />
     case 'diagram':
-      return '🔷'
+      return <i className="bi bi-diagram-3" aria-hidden="true" />
     case 'chat':
-      return '💬'
+      return <i className="bi bi-chat-dots" aria-hidden="true" />
     case 'projects':
-      return '📁'
+      return <i className="bi bi-folder" aria-hidden="true" />
+    case 'json':
+      return <i className="bi bi-filetype-json" aria-hidden="true" />
     default:
-      return '📋'
+      return <i className="bi bi-file-earmark" aria-hidden="true" />
   }
 }
 
 function entryIcon(entry: FileEntry) {
-  if (entry.kind === 'folder') return '📁'
+  if (entry.kind === 'folder') return <i className="bi bi-folder" aria-hidden="true" />
   const ext = entry.name.split('.').pop()?.toLowerCase()
-  if (ext === 'md' || ext === 'txt' || ext === 'js' || ext === 'ts' || ext === 'tsx' || ext === 'jsx') return '📄'
-  if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'svg' || ext === 'gif') return '🖼️'
-  if (ext === 'json' || ext === 'yaml' || ext === 'yml') return '📋'
-  return '📄'
+  if (ext === 'json') return <i className="bi bi-filetype-json" aria-hidden="true" />
+  if (ext === 'md') return <i className="bi bi-filetype-md" aria-hidden="true" />
+  if (ext === 'js') return <i className="bi bi-filetype-js" aria-hidden="true" />
+  if (ext === 'ts' || ext === 'tsx') return <i className="bi bi-filetype-tsx" aria-hidden="true" />
+  if (ext === 'jsx') return <i className="bi bi-filetype-jsx" aria-hidden="true" />
+  if (ext === 'css') return <i className="bi bi-filetype-css" aria-hidden="true" />
+  if (ext === 'html') return <i className="bi bi-filetype-html" aria-hidden="true" />
+  if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'svg') return <i className="bi bi-file-image" aria-hidden="true" />
+  if (ext === 'yaml' || ext === 'yml') return <i className="bi bi-file-earmark-code" aria-hidden="true" />
+  if (ext === 'txt') return <i className="bi bi-file-text" aria-hidden="true" />
+  return <i className="bi bi-file-earmark" aria-hidden="true" />
 }
 
 type ContextMenuState = {

@@ -405,3 +405,29 @@
   text-align: center;
   padding: 24px 0;
 }
+
+/* Project Types */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.fieldTextarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+.projectTypeIcon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.buttonSmall:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

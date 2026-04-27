@@ -10,6 +10,7 @@ import Settings from '../Settings/Settings'
 import ChatPane from '../Chat/ChatPane'
 import LogViewer from '../LogViewer/LogViewer'
 import ProjectsPane from '../Projects/ProjectsPane'
+import JsonViewer from '../JsonViewer/JsonViewer'
 import Sidebar from '../Sidebar/Sidebar'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { generateId } from '../../utils'
@@ -36,6 +37,7 @@ const TAB_DEFAULT_TITLES: Record<string, string> = {
   settings: 'Settings',
   log: 'App Log',
   projects: 'Projects',
+  json: 'JSON File',
 }
 
 function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolean }) {
@@ -237,6 +239,8 @@ function ActiveTabContent({ panel }: { panel: WorkspacePanel }) {
       return <LogViewer />
     case 'projects':
       return <ProjectsPane />
+    case 'json':
+      return <JsonViewer tabId={activeTab.id} />
     default:
       return (
         <div className={styles.emptyPanel}>

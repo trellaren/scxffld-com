@@ -41,6 +41,16 @@ export interface RepositoryRecord {
   url: string
 }
 
+export interface ProjectTypeRecord {
+  id: string
+  name: string
+  description: string
+  icon: string
+  defaultFolders: string[]
+  defaultTabs: string[]
+  defaultFiles: string[]
+}
+
 export interface AppSettings {
   aiApi: AIApiSettings
   plugins: PluginEntry[]
@@ -48,6 +58,7 @@ export interface AppSettings {
   users: UserRecord[]
   teams: TeamRecord[]
   repositories: RepositoryRecord[]
+  projectTypes: ProjectTypeRecord[]
 }
 
 export interface SettingsState {
@@ -69,6 +80,7 @@ const defaultSettings: AppSettings = {
   users: [],
   teams: [],
   repositories: [],
+  projectTypes: [],
 }
 
 function loadFromLocalStorage(): AppSettings {
@@ -83,6 +95,7 @@ function loadFromLocalStorage(): AppSettings {
         users: parsed.users ?? defaultSettings.users,
         teams: parsed.teams ?? defaultSettings.teams,
         repositories: parsed.repositories ?? defaultSettings.repositories,
+        projectTypes: parsed.projectTypes ?? defaultSettings.projectTypes,
       }
     }
   } catch {
@@ -155,6 +168,16 @@ const settingsSlice = createSlice({
     loadSettingsFromJson(state, action: PayloadAction<AppSettings>) {
       state.settings = action.payload
     },
+    addProjectType(state, action: PayloadAction<Omit<ProjectTypeRecord, 'id'>>) {
+      state.settings.projectTypes.push({ id: generateId('pt'), ...action.payload })
+    },
+    updateProjectType(state, action: PayloadAction<ProjectTypeRecord>) {
+      const idx = state.settings.projectTypes.findIndex((p) => p.id === action.payload.id)
+      if (idx !== -1) state.settings.projectTypes[idx] = action.payload
+    },
+    removeProjectType(state, action: PayloadAction<string>) {
+      state.settings.projectTypes = state.settings.projectTypes.filter((p) => p.id !== action.payload)
+    },
   },
 })
 
@@ -176,6 +199,9 @@ export const {
   updateRepository,
   removeRepository,
   loadSettingsFromJson,
+  addProjectType,
+  updateProjectType,
+  removeProjectType,
 } = settingsSlice.actions
 
 export const AVAILABLE_THEMES = [
