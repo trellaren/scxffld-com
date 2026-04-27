@@ -1,20 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import { Schema, DOMParser } from 'prosemirror-model'
-import { schema } from 'prosemirror-schema-basic'
-import { addListNodes } from 'prosemirror-schema-list'
+import { DOMParser } from 'prosemirror-model'
 import { history, undo, redo } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
-import { baseKeymap } from 'prosemirror-commands'
+import { baseKeymap, toggleMark } from 'prosemirror-commands'
+import { wrapInList, liftListItem } from 'prosemirror-schema-list'
 import 'prosemirror-view/style/prosemirror.css'
 import styles from './ProseMirrorEditor.module.css'
 import { registerEditor, unregisterEditor } from '../../editorRegistry'
-
-const mySchema = new Schema({
-  nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
-  marks: schema.spec.marks,
-})
+import { editorSchema } from './schema'
+import EditorToolbar from './EditorToolbar'
 
 interface ProseMirrorEditorProps {
   tabId: string
@@ -31,10 +27,19 @@ export default function ProseMirrorEditor({ tabId }: ProseMirrorEditorProps) {
     content.innerHTML = '<p>Start typing here\u2026</p>'
 
     const state = EditorState.create({
-      doc: DOMParser.fromSchema(mySchema).parse(content),
+      doc: DOMParser.fromSchema(editorSchema).parse(content),
       plugins: [
         history(),
-        keymap({ 'Mod-z': undo, 'Mod-y': redo }),
+        keymap({
+          'Mod-z': undo,
+          'Mod-y': redo,
+          'Mod-b': toggleMark(editorSchema.marks.strong),
+          'Mod-i': toggleMark(editorSchema.marks.em),
+          'Mod-`': toggleMark(editorSchema.marks.code),
+          'Shift-Ctrl-8': wrapInList(editorSchema.nodes.bullet_list),
+          'Shift-Ctrl-9': wrapInList(editorSchema.nodes.ordered_list),
+          'Shift-Tab': liftListItem(editorSchema.nodes.list_item),
+        }),
         keymap(baseKeymap),
       ],
     })
@@ -46,7 +51,12 @@ export default function ProseMirrorEditor({ tabId }: ProseMirrorEditorProps) {
       unregisterEditor(tabId)
       viewRef.current?.destroy()
     }
-  }, [tabId, registerEditor, unregisterEditor])
+  }, [tabId])
 
-  return <div ref={editorRef} className={styles.editor} />
+  return (
+    <div className={styles.editorWrapper}>
+      <EditorToolbar viewRef={viewRef} />
+      <div ref={editorRef} className={styles.editor} />
+    </div>
+  )
 }
