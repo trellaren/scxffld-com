@@ -13,18 +13,25 @@ import {
 import type { PanelType, FileEntry } from '../../store/workspaceSlice'
 import { toggleTimeline } from '../../store/timelineSlice'
 import { generateId } from '../../utils'
+import SaveAsDialog from '../SaveAsDialog/SaveAsDialog'
 import styles from './Header.module.css'
 
 export default function Header() {
   const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.auth.user)
   const activePanelId = useSelector((state: RootState) => state.workspace.activePanelId)
+  const panels = useSelector((state: RootState) => state.workspace.panels)
   const openFolderName = useSelector((state: RootState) => state.workspace.openFolderName)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [saveAsOpen, setSaveAsOpen] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
+
+  // Derive the active tab from the active panel
+  const activePanel = panels.find((p) => p.id === activePanelId) ?? null
+  const activeTab = activePanel?.tabs.find((t) => t.id === activePanel.activeTabId) ?? null
 
   function openMenu(name: string) {
     setActiveMenu((prev) => (prev === name ? null : name))
@@ -135,11 +142,21 @@ export default function Header() {
     closeAll()
   }
 
+  function handleSaveAs() {
+    closeAll()
+    setSaveAsOpen(true)
+  }
+
   return (
     <>
       {/* Overlay to close menus on outside click */}
       {(activeMenu || userMenuOpen) && (
         <div className={styles.overlay} onClick={closeAll} />
+      )}
+
+      {/* Save As dialog */}
+      {saveAsOpen && (
+        <SaveAsDialog activeTab={activeTab} onClose={() => setSaveAsOpen(false)} />
       )}
 
       {/* Hidden file inputs */}
@@ -198,7 +215,10 @@ export default function Header() {
                 <li className={styles.dropdownItemDisabled}>
                   Save
                 </li>
-                <li className={styles.dropdownItemDisabled}>
+                <li
+                  className={activeTab ? styles.dropdownItem : styles.dropdownItemDisabled}
+                  onClick={activeTab ? handleSaveAs : undefined}
+                >
                   Save As
                 </li>
                 <li className={styles.dropdownItemDisabled}>

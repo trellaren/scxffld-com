@@ -9,13 +9,18 @@ import { keymap } from 'prosemirror-keymap'
 import { baseKeymap } from 'prosemirror-commands'
 import 'prosemirror-view/style/prosemirror.css'
 import styles from './ProseMirrorEditor.module.css'
+import { registerEditor, unregisterEditor } from '../../editorRegistry'
 
 const mySchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
   marks: schema.spec.marks,
 })
 
-export default function ProseMirrorEditor() {
+interface ProseMirrorEditorProps {
+  tabId: string
+}
+
+export default function ProseMirrorEditor({ tabId }: ProseMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
 
@@ -35,11 +40,14 @@ export default function ProseMirrorEditor() {
     })
 
     viewRef.current = new EditorView(editorRef.current, { state })
+    registerEditor(tabId, viewRef.current)
 
     return () => {
+      unregisterEditor(tabId)
       viewRef.current?.destroy()
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabId])
 
   return <div ref={editorRef} className={styles.editor} />
 }
