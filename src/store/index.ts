@@ -4,6 +4,7 @@ import authReducer from './authSlice'
 import timelineReducer from './timelineSlice'
 import aiReducer from './aiSlice'
 import settingsReducer from './settingsSlice'
+import logReducer from './logSlice'
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     timeline: timelineReducer,
     ai: aiReducer,
     settings: settingsReducer,
+    log: logReducer,
   },
 })
 

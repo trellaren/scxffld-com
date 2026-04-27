@@ -10,5 +10,8 @@ interface Window {
     minimizeWindow: () => void
     maximizeWindow: () => void
     closeWindow: () => void
+    writeLog: (level: string, message: string, timestamp: string) => void
+    getLogPath: () => Promise<string>
+    readLog: () => Promise<string>
   }
 }

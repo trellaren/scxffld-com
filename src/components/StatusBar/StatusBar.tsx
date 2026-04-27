@@ -79,6 +79,8 @@ function labelForType(type: PanelType): string {
       return 'Document'
     case 'diagram':
       return 'Diagram'
+    case 'log':
+      return 'Log'
     default:
       return 'Empty'
   }
