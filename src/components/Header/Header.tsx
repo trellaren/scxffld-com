@@ -35,6 +35,7 @@ export default function Header() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [saveAsOpen, setSaveAsOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
@@ -57,6 +58,7 @@ export default function Header() {
   function closeAll() {
     setActiveMenu(null)
     setUserMenuOpen(false)
+    setMobileMenuOpen(false)
   }
 
   function handleNewTab(type: PanelType, title?: string) {
@@ -264,6 +266,62 @@ export default function Header() {
         <div className={styles.overlay} onClick={closeAll} />
       )}
 
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <>
+          <div className={styles.mobileMenuOverlay} onClick={closeAll} />
+          <div className={styles.mobileMenu}>
+            <div className={styles.mobileMenuHeader}>
+              <span className={styles.mobileMenuTitle}>Menu</span>
+              <button className={styles.mobileMenuClose} onClick={closeAll} aria-label="Close menu">
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.mobileMenuSection}>
+              <div className={styles.mobileMenuSectionTitle}>File</div>
+              <button className={styles.mobileMenuItem} onClick={() => handleNewTab('editor')}>New Text File</button>
+              <button className={styles.mobileMenuItem} onClick={() => handleNewTab('diagram')}>New Diagram</button>
+              <button className={styles.mobileMenuItem} onClick={handleOpenFile}>Open File</button>
+              <button className={styles.mobileMenuItem} onClick={handleOpenFolder}>Open Folder</button>
+              <button
+                className={activeTab ? styles.mobileMenuItem : styles.mobileMenuItemDisabled}
+                onClick={activeTab ? handleSaveAs : undefined}
+              >
+                Save As
+              </button>
+              <button className={styles.mobileMenuItem} onClick={handleSaveProjectFile}>Save Project File</button>
+              <button className={styles.mobileMenuItem} onClick={handleOpenProjectFile}>Open Project File</button>
+              <button
+                className={openFolderName ? styles.mobileMenuItem : styles.mobileMenuItemDisabled}
+                onClick={openFolderName ? handleCloseFolder : undefined}
+              >
+                Close Folder
+              </button>
+              <button className={styles.mobileMenuItem} onClick={handleOpenSettings}>Settings</button>
+            </div>
+
+            <div className={styles.mobileMenuSection}>
+              <div className={styles.mobileMenuSectionTitle}>View</div>
+              <button className={styles.mobileMenuItem} onClick={() => { dispatch(toggleSidebar()); closeAll() }}>Toggle Sidebar</button>
+              <button className={styles.mobileMenuItem} onClick={() => { dispatch(toggleTimeline()); closeAll() }}>Toggle Timeline</button>
+              <button className={styles.mobileMenuItem} onClick={() => { dispatch(toggleChat()); closeAll() }}>Toggle Chat</button>
+            </div>
+
+            <div className={styles.mobileMenuSection}>
+              <div className={styles.mobileMenuSectionTitle}>Help</div>
+              <button className={styles.mobileMenuItem} onClick={handleViewLog}>View Log</button>
+            </div>
+
+            <div className={styles.mobileMenuSection}>
+              <div className={styles.mobileMenuSectionTitle}>Account</div>
+              <div className={styles.mobileMenuItemDisabled}>Signed in as {user?.username}</div>
+              <button className={styles.mobileMenuItem} onClick={handleLogout}>Sign Out</button>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Save As dialog */}
       {saveAsOpen && (
         <SaveAsDialog activeTab={activeTab} onClose={() => setSaveAsOpen(false)} />
@@ -299,6 +357,16 @@ export default function Header() {
       <header className={styles.header}>
         {/* App name / logo */}
         <div className={styles.appName}>scxffld</div>
+
+        {/* Hamburger button – mobile only */}
+        <button
+          className={styles.hamburgerButton}
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          aria-label="Open menu"
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? '✕' : '☰'}
+        </button>
 
         {/* Navigation menus */}
         <nav className={styles.nav}>
