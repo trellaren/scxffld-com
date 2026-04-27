@@ -176,7 +176,7 @@ function ModelConfigCard({
           placeholder={DEFAULT_ENDPOINTS[draft.provider]}
         />
       </div>
-      {draft.provider !== 'ollama' && draft.provider !== 'lmstudio' && (
+      {draft.provider !== 'ollama' && (
         <div className={styles.formRow}>
           <label className={styles.formLabel}>API Key</label>
           <input
@@ -378,7 +378,7 @@ export default function Settings() {
                   placeholder={DEFAULT_ENDPOINTS[newDraft.provider] || 'https://...'}
                 />
               </div>
-              {newDraft.provider !== 'ollama' && newDraft.provider !== 'lmstudio' && (
+              {newDraft.provider !== 'ollama' && (
                 <div className={styles.formRow}>
                   <label className={styles.formLabel}>API Key</label>
                   <input

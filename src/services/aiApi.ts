@@ -186,7 +186,7 @@ export async function sendChatMessage(
       const base = endpoint || 'http://localhost:1234'
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
-      const res = await fetch(`${base}/v1/chat`, {
+      const res = await fetch(`${base}/v1/chat/completions`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
