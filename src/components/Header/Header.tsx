@@ -207,11 +207,18 @@ export default function Header() {
     const reader = new FileReader()
     reader.onload = (ev) => {
       try {
-        const data = JSON.parse(ev.target?.result as string) as {
-          openFolderName: string
-          openFolderFiles: FileEntry[]
+        const raw = JSON.parse(ev.target?.result as string) as unknown
+        if (
+          raw !== null &&
+          typeof raw === 'object' &&
+          'openFolderName' in raw &&
+          'openFolderFiles' in raw &&
+          typeof (raw as { openFolderName: unknown }).openFolderName === 'string' &&
+          Array.isArray((raw as { openFolderFiles: unknown }).openFolderFiles)
+        ) {
+          const data = raw as { openFolderName: string; openFolderFiles: FileEntry[] }
+          dispatch(loadProjectFile({ openFolderName: data.openFolderName, openFolderFiles: data.openFolderFiles }))
         }
-        dispatch(loadProjectFile({ openFolderName: data.openFolderName, openFolderFiles: data.openFolderFiles }))
       } catch {
         // ignore invalid JSON
       }
