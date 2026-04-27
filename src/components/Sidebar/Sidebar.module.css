@@ -105,3 +105,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.fileItemIndented {
+  padding-left: 36px;
+}
+
+.renameInput {
+  flex: 1;
+  min-width: 0;
+  background-color: #3c3f41;
+  border: 1px solid #007acc;
+  border-radius: 2px;
+  color: #ffffff;
+  font-size: 13px;
+  padding: 1px 4px;
+  outline: none;
+}

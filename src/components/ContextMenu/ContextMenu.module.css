@@ -1,0 +1,40 @@
+.contextMenu {
+  position: fixed;
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  min-width: 160px;
+  list-style: none;
+  padding: 4px 0;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+.item {
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #cccccc;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s;
+}
+
+.item:hover {
+  background-color: #094771;
+  color: #ffffff;
+}
+
+.itemDisabled {
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #555555;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.divider {
+  border-top: 1px solid #3c3c3c;
+  margin: 4px 0;
+  padding: 0;
+}
