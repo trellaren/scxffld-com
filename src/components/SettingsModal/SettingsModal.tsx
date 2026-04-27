@@ -730,8 +730,55 @@ export default function SettingsModal() {
     const reader = new FileReader()
     reader.onload = (evt) => {
       try {
-        const parsed = JSON.parse(evt.target?.result as string) as AppSettings
-        dispatch(loadSettingsFromJson(parsed))
+        const parsed = JSON.parse(evt.target?.result as string) as unknown
+
+        // Validate the imported object before applying it to guard against
+        // malicious JSON files that could inject unexpected data.
+        if (
+          parsed === null ||
+          typeof parsed !== 'object' ||
+          Array.isArray(parsed)
+        ) {
+          return
+        }
+
+        const raw = parsed as Record<string, unknown>
+
+        // Validate aiApi sub-object
+        const aiApi = raw.aiApi
+        if (
+          aiApi !== undefined && (
+            typeof aiApi !== 'object' ||
+            aiApi === null ||
+            Array.isArray(aiApi)
+          )
+        ) {
+          return
+        }
+
+        // Validate plugins is an array (if present)
+        if (raw.plugins !== undefined && !Array.isArray(raw.plugins)) {
+          return
+        }
+
+        // Validate theme sub-object (if present)
+        const theme = raw.theme
+        if (
+          theme !== undefined && (
+            typeof theme !== 'object' ||
+            theme === null ||
+            Array.isArray(theme)
+          )
+        ) {
+          return
+        }
+
+        // Validate users/teams/repositories are arrays (if present)
+        if (raw.users !== undefined && !Array.isArray(raw.users)) { return }
+        if (raw.teams !== undefined && !Array.isArray(raw.teams)) { return }
+        if (raw.repositories !== undefined && !Array.isArray(raw.repositories)) { return }
+
+        dispatch(loadSettingsFromJson(raw as unknown as AppSettings))
       } catch {
         // ignore malformed JSON
       }

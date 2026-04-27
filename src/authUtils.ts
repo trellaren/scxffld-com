@@ -59,7 +59,15 @@ export async function verifyPassword(
   storedSalt: string,
 ): Promise<boolean> {
   const { hash } = await hashPassword(password, storedSalt)
-  return hash === storedHash
+  // Constant-time comparison to prevent timing attacks.
+  // Both strings are hex-encoded PBKDF2 outputs of identical length, so we
+  // XOR each character code pair and accumulate the differences.
+  if (hash.length !== storedHash.length) return false
+  let diff = 0
+  for (let i = 0; i < hash.length; i++) {
+    diff |= hash.charCodeAt(i) ^ storedHash.charCodeAt(i)
+  }
+  return diff === 0
 }
 
 export function getStoredUsers(): StoredUser[] {
@@ -264,6 +272,17 @@ export async function exchangeOAuthCode(
       if (!proxyUrl) {
         throw new Error(
           'GitHub OAuth requires a server-side token exchange. Set VITE_OAUTH_PROXY_URL to a backend proxy URL.',
+        )
+      }
+      // Only allow HTTPS (or localhost HTTP for development) to prevent tokens
+      // from being transmitted over an unencrypted connection.
+      const proxyOrigin = new URL(proxyUrl).origin
+      const isLocalhost =
+        proxyOrigin.startsWith('http://localhost') ||
+        proxyOrigin.startsWith('http://127.0.0.1')
+      if (!proxyUrl.startsWith('https://') && !isLocalhost) {
+        throw new Error(
+          'VITE_OAUTH_PROXY_URL must use HTTPS to protect OAuth tokens in transit.',
         )
       }
       tokenUrl = `${proxyUrl}/github/token`
