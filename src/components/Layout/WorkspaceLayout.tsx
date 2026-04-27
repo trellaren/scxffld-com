@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../../store'
-import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab } from '../../store/workspaceSlice'
+import { setActivePanel, setActiveTab, removeTab, removePanel, renameTab, moveTab } from '../../store/workspaceSlice'
 import type { Panel as WorkspacePanel } from '../../store/workspaceSlice'
 import ProseMirrorEditor from '../Editor/ProseMirrorEditor'
 import DiagramCanvas from '../Diagram/DiagramCanvas'
@@ -16,6 +16,7 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
 
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [isDragOver, setIsDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -48,13 +49,60 @@ function TabBar({ panel, showClose }: { panel: WorkspacePanel; showClose: boolea
     }
   }
 
+  function handleDragStart(e: React.DragEvent, tabId: string) {
+    e.dataTransfer.setData(
+      'application/x-tab-drag',
+      JSON.stringify({ tabId, sourcePanelId: panel.id }),
+    )
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    if (e.dataTransfer.types.includes('application/x-tab-drag')) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      setIsDragOver(true)
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false)
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragOver(false)
+    try {
+      const raw = e.dataTransfer.getData('application/x-tab-drag')
+      if (!raw) return
+      const { tabId, sourcePanelId } = JSON.parse(raw) as {
+        tabId: string
+        sourcePanelId: string
+      }
+      if (tabId && sourcePanelId && sourcePanelId !== panel.id) {
+        dispatch(moveTab({ tabId, sourcePanelId, targetPanelId: panel.id }))
+      }
+    } catch {
+      // ignore malformed drag data
+    }
+  }
+
   return (
-    <div className={styles.tabBar}>
+    <div
+      className={`${styles.tabBar} ${isDragOver ? styles.tabBarDragOver : ''}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className={styles.tabBarTabs}>
         {panel.tabs.map((tab) => (
           <div
             key={tab.id}
             className={`${styles.tab} ${isActivePanel && panel.activeTabId === tab.id ? styles.activeTab : ''}`}
+            draggable={editingTabId !== tab.id}
+            onDragStart={(e) => handleDragStart(e, tab.id)}
             onClick={(e) => {
               e.stopPropagation()
               dispatch(setActiveTab({ panelId: panel.id, tabId: tab.id }))
