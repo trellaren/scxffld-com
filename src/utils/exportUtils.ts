@@ -118,8 +118,75 @@ export async function exportTextAsPdf(tabId: string, filename: string): Promise<
 }
 
 // ---------------------------------------------------------------------------
-// Diagram exports
+// Chat exports
 // ---------------------------------------------------------------------------
+
+export interface ChatExportMessage {
+  role: 'user' | 'assistant'
+  text: string
+}
+
+export function exportChatAsTxt(messages: ChatExportMessage[], filename: string): void {
+  const lines = messages.map((m) => `${m.role === 'user' ? 'You' : 'Assistant'}: ${m.text}`)
+  const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' })
+  downloadBlob(blob, filename)
+}
+
+export function exportChatAsJson(messages: ChatExportMessage[], filename: string): void {
+  const blob = new Blob([JSON.stringify(messages, null, 2)], { type: 'application/json;charset=utf-8' })
+  downloadBlob(blob, filename)
+}
+
+export async function exportChatAsDocx(messages: ChatExportMessage[], filename: string): Promise<void> {
+  const paragraphs = messages.flatMap((m) => [
+    new Paragraph({
+      children: [new TextRun({ text: m.role === 'user' ? 'You:' : 'Assistant:', bold: true })],
+    }),
+    new Paragraph({ children: [new TextRun({ text: m.text })] }),
+    new Paragraph({ children: [] }),
+  ])
+  const doc = new Document({ sections: [{ children: paragraphs }] })
+  const blob = await Packer.toBlob(doc)
+  downloadBlob(blob, filename)
+}
+
+export function exportChatAsPdf(messages: ChatExportMessage[], filename: string): void {
+  const pdf = new jsPDF()
+  const pageHeight = pdf.internal.pageSize.getHeight()
+  const pageWidth = pdf.internal.pageSize.getWidth()
+  const margin = 15
+  const maxWidth = pageWidth - margin * 2
+  const lineHeight = 6
+  const labelHeight = 7
+  let y = margin
+
+  for (const msg of messages) {
+    const label = msg.role === 'user' ? 'You:' : 'Assistant:'
+    if (y + labelHeight > pageHeight - margin) {
+      pdf.addPage()
+      y = margin
+    }
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(11)
+    pdf.text(label, margin, y)
+    y += labelHeight
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(11)
+    const wrapped = pdf.splitTextToSize(msg.text, maxWidth)
+    for (const line of wrapped) {
+      if (y + lineHeight > pageHeight - margin) {
+        pdf.addPage()
+        y = margin
+      }
+      pdf.text(line, margin, y)
+      y += lineHeight
+    }
+    y += lineHeight // blank line between messages
+  }
+
+  pdf.save(filename)
+}
 
 export function exportDiagramAsJson(
   nodes: unknown[],

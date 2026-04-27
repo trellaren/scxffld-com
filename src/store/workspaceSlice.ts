@@ -31,6 +31,11 @@ export interface DiagramData {
   edges: unknown[]
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  text: string
+}
+
 export interface WorkspaceState {
   rows: PanelRow[]
   activePanelId: string | null
@@ -40,6 +45,7 @@ export interface WorkspaceState {
   activePath: string | null
   diagramData: Record<string, DiagramData>
   chatOpen: boolean
+  chatMessages: Record<string, ChatMessage[]>
 }
 
 const initialState: WorkspaceState = {
@@ -65,6 +71,7 @@ const initialState: WorkspaceState = {
   activePath: null,
   diagramData: {},
   chatOpen: false,
+  chatMessages: {},
 }
 
 function findPanel(rows: PanelRow[], panelId: string): Panel | undefined {
@@ -174,6 +181,8 @@ const workspaceSlice = createSlice({
             panel.tabs[Math.max(0, idx - 1)]?.id ?? panel.tabs[0]?.id ?? null
         }
       }
+      // Clean up any persisted chat messages for this tab
+      delete state.chatMessages[action.payload.tabId]
     },
     moveTab(
       state,
@@ -410,6 +419,15 @@ const workspaceSlice = createSlice({
     setDiagramData(state, action: PayloadAction<{ tabId: string; data: DiagramData }>) {
       state.diagramData[action.payload.tabId] = action.payload.data
     },
+    setChatMessages(
+      state,
+      action: PayloadAction<{ sessionId: string; messages: ChatMessage[] }>,
+    ) {
+      state.chatMessages[action.payload.sessionId] = action.payload.messages
+    },
+    clearChatMessages(state, action: PayloadAction<string>) {
+      delete state.chatMessages[action.payload]
+    },
     toggleChat(state) {
       state.chatOpen = !state.chatOpen
     },
@@ -441,6 +459,8 @@ export const {
   renameFolderEntry,
   setActivePath,
   setDiagramData,
+  setChatMessages,
+  clearChatMessages,
   toggleChat,
   loadProjectFile,
 } = workspaceSlice.actions

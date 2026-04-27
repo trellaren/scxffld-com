@@ -58,11 +58,49 @@ const defaultConfigs: ModelConfig[] = [
   },
 ]
 
-const initialState: AiState = {
-  modelConfigs: defaultConfigs,
-  selectedModelConfigId: null,
-  selectedModelId: null,
+const AI_STORAGE_KEY = 'scxffld-ai-state'
+
+/** Load persisted AI state from localStorage, falling back to undefined on any error. */
+function loadPersistedAiState(): Partial<AiState> | undefined {
+  try {
+    const raw = localStorage.getItem(AI_STORAGE_KEY)
+    if (!raw) return undefined
+    return JSON.parse(raw) as Partial<AiState>
+  } catch {
+    return undefined
+  }
 }
+
+function buildInitialState(): AiState {
+  const persisted = loadPersistedAiState()
+  if (!persisted) {
+    return {
+      modelConfigs: defaultConfigs,
+      selectedModelConfigId: null,
+      selectedModelId: null,
+    }
+  }
+
+  // Merge persisted configs with defaults: keep defaults as base, overlay persisted
+  // configs that have the same id (to preserve user-set apiKey/endpoint/models),
+  // and append any extra custom configs the user may have added.
+  const mergedConfigs = defaultConfigs.map((def) => {
+    const saved = persisted.modelConfigs?.find((c) => c.id === def.id)
+    return saved ?? def
+  })
+  // Append custom configs that don't match any default id
+  const customConfigs = (persisted.modelConfigs ?? []).filter(
+    (c) => !defaultConfigs.some((d) => d.id === c.id),
+  )
+
+  return {
+    modelConfigs: [...mergedConfigs, ...customConfigs],
+    selectedModelConfigId: persisted.selectedModelConfigId ?? null,
+    selectedModelId: persisted.selectedModelId ?? null,
+  }
+}
+
+const initialState: AiState = buildInitialState()
 
 const aiSlice = createSlice({
   name: 'ai',
@@ -101,3 +139,10 @@ export const {
   removeModelConfig,
 } = aiSlice.actions
 export default aiSlice.reducer
+
+/** Serialize AI state for localStorage persistence. */
+export function serializeAiState(state: AiState): string {
+  return JSON.stringify(state)
+}
+
+export { AI_STORAGE_KEY }
