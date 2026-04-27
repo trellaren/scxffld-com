@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 export interface ModelConfig {
   id: string
   name: string
-  provider: 'openai' | 'anthropic' | 'ollama' | 'custom'
+  provider: 'openai' | 'anthropic' | 'lmstudio' | 'huggingface' | 'ollama' | 'custom'
   apiKey: string
   endpoint: string
   models: string[]
@@ -31,6 +31,22 @@ const defaultConfigs: ModelConfig[] = [
     apiKey: '',
     endpoint: 'https://api.anthropic.com',
     models: ['claude-opus-4-5', 'claude-sonnet-4-5', 'claude-haiku-4-5'],
+  },
+  {
+    id: 'lmstudio',
+    name: 'LM Studio',
+    provider: 'lmstudio',
+    apiKey: '',
+    endpoint: 'http://localhost:1234',
+    models: [],
+  },
+  {
+    id: 'huggingface',
+    name: 'Hugging Face',
+    provider: 'huggingface',
+    apiKey: '',
+    endpoint: 'https://api-inference.huggingface.co',
+    models: [],
   },
   {
     id: 'ollama',

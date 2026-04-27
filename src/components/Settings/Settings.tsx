@@ -7,6 +7,7 @@ import {
   removeModelConfig,
 } from '../../store/aiSlice'
 import type { ModelConfig } from '../../store/aiSlice'
+import { fetchModels } from '../../services/aiApi'
 import { generateId } from '../../utils'
 import styles from './Settings.module.css'
 
@@ -15,6 +16,8 @@ type ProviderType = ModelConfig['provider']
 const PROVIDER_LABELS: Record<ProviderType, string> = {
   openai: 'OpenAI',
   anthropic: 'Anthropic',
+  lmstudio: 'LM Studio',
+  huggingface: 'Hugging Face',
   ollama: 'Ollama (Local)',
   custom: 'Custom',
 }
@@ -22,6 +25,8 @@ const PROVIDER_LABELS: Record<ProviderType, string> = {
 const DEFAULT_ENDPOINTS: Record<ProviderType, string> = {
   openai: 'https://api.openai.com/v1',
   anthropic: 'https://api.anthropic.com',
+  lmstudio: 'http://localhost:1234',
+  huggingface: 'https://api-inference.huggingface.co',
   ollama: 'http://localhost:11434',
   custom: '',
 }
@@ -39,20 +44,43 @@ function ModelConfigCard({
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<ModelConfig>(config)
-  const [modelsText, setModelsText] = useState(config.models.join(', '))
+  const [fetchingModels, setFetchingModels] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [availableModels, setAvailableModels] = useState<string[]>([])
 
   function handleEdit() {
     setDraft(config)
-    setModelsText(config.models.join(', '))
+    setAvailableModels(config.models)
+    setFetchError(null)
     setEditing(true)
   }
 
+  async function handleFetchModels() {
+    setFetchingModels(true)
+    setFetchError(null)
+    try {
+      const models = await fetchModels(draft)
+      setAvailableModels(models)
+      // Auto-select all fetched models for the config
+      setDraft((d) => ({ ...d, models }))
+    } catch (err) {
+      setFetchError(err instanceof Error ? err.message : 'Failed to fetch models')
+    } finally {
+      setFetchingModels(false)
+    }
+  }
+
+  function toggleModel(modelId: string) {
+    setDraft((d) => ({
+      ...d,
+      models: d.models.includes(modelId)
+        ? d.models.filter((m) => m !== modelId)
+        : [...d.models, modelId],
+    }))
+  }
+
   function handleSave() {
-    const models = modelsText
-      .split(',')
-      .map((m) => m.trim())
-      .filter(Boolean)
-    onSave({ ...draft, models })
+    onSave(draft)
     setEditing(false)
   }
 
@@ -102,6 +130,11 @@ function ModelConfigCard({
     )
   }
 
+  // Combine: show available (fetched) models + any previously saved ones not in the fetched list
+  const displayModels = availableModels.length > 0
+    ? [...new Set([...availableModels, ...draft.models])]
+    : draft.models
+
   return (
     <div className={`${styles.configCard} ${styles.configCardEditing}`}>
       <div className={styles.formRow}>
@@ -143,7 +176,7 @@ function ModelConfigCard({
           placeholder={DEFAULT_ENDPOINTS[draft.provider]}
         />
       </div>
-      {draft.provider !== 'ollama' && (
+      {draft.provider !== 'ollama' && draft.provider !== 'lmstudio' && (
         <div className={styles.formRow}>
           <label className={styles.formLabel}>API Key</label>
           <input
@@ -157,14 +190,35 @@ function ModelConfigCard({
         </div>
       )}
       <div className={styles.formRow}>
-        <label className={styles.formLabel}>Models</label>
-        <input
-          className={styles.formInput}
-          value={modelsText}
-          onChange={(e) => setModelsText(e.target.value)}
-          placeholder="model-id-1, model-id-2"
-        />
-        <div className={styles.formHint}>Comma-separated list of model IDs</div>
+        <label className={styles.formLabel}>Available Models</label>
+        <div className={styles.modelsFetchRow}>
+          <button
+            className={styles.buttonSecondary}
+            onClick={handleFetchModels}
+            disabled={fetchingModels}
+          >
+            {fetchingModels ? 'Fetching…' : 'Fetch Models'}
+          </button>
+          {fetchError && <span className={styles.fetchError}>{fetchError}</span>}
+        </div>
+        {displayModels.length > 0 ? (
+          <div className={styles.modelCheckboxList}>
+            {displayModels.map((modelId) => (
+              <label key={modelId} className={styles.modelCheckboxRow}>
+                <input
+                  type="checkbox"
+                  checked={draft.models.includes(modelId)}
+                  onChange={() => toggleModel(modelId)}
+                />
+                <span>{modelId}</span>
+              </label>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.formHint}>
+            Click "Fetch Models" to load available models from this provider.
+          </div>
+        )}
       </div>
       <div className={styles.formActions}>
         <button className={styles.buttonSecondary} onClick={handleCancel}>
@@ -190,7 +244,11 @@ export default function Settings() {
     endpoint: '',
     models: [],
   })
-  const [newModelsText, setNewModelsText] = useState('')
+  const [newFetchingModels, setNewFetchingModels] = useState(false)
+  const [newFetchError, setNewFetchError] = useState<string | null>(null)
+  const [newAvailableModels, setNewAvailableModels] = useState<string[]>([])
+
+  const BUILT_IN_IDS = ['openai', 'anthropic', 'lmstudio', 'huggingface', 'ollama']
 
   function handleSave(cfg: ModelConfig) {
     dispatch(updateModelConfig(cfg))
@@ -209,23 +267,47 @@ export default function Settings() {
       endpoint: '',
       models: [],
     })
-    setNewModelsText('')
+    setNewAvailableModels([])
+    setNewFetchError(null)
     setAddingNew(true)
   }
 
+  async function handleFetchNewModels() {
+    setNewFetchingModels(true)
+    setNewFetchError(null)
+    try {
+      const models = await fetchModels(newDraft)
+      setNewAvailableModels(models)
+      setNewDraft((d) => ({ ...d, models }))
+    } catch (err) {
+      setNewFetchError(err instanceof Error ? err.message : 'Failed to fetch models')
+    } finally {
+      setNewFetchingModels(false)
+    }
+  }
+
+  function toggleNewModel(modelId: string) {
+    setNewDraft((d) => ({
+      ...d,
+      models: d.models.includes(modelId)
+        ? d.models.filter((m) => m !== modelId)
+        : [...d.models, modelId],
+    }))
+  }
+
   function handleSaveNew() {
-    const models = newModelsText
-      .split(',')
-      .map((m) => m.trim())
-      .filter(Boolean)
     if (!newDraft.name.trim()) return
-    dispatch(addModelConfig({ ...newDraft, models }))
+    dispatch(addModelConfig(newDraft))
     setAddingNew(false)
   }
 
   function handleCancelNew() {
     setAddingNew(false)
   }
+
+  const newDisplayModels = newAvailableModels.length > 0
+    ? [...new Set([...newAvailableModels, ...newDraft.models])]
+    : newDraft.models
 
   return (
     <div className={styles.container}>
@@ -246,7 +328,7 @@ export default function Settings() {
                 config={cfg}
                 onSave={handleSave}
                 onRemove={handleRemove}
-                removable={!['openai', 'anthropic', 'ollama'].includes(cfg.id)}
+                removable={!BUILT_IN_IDS.includes(cfg.id)}
               />
             ))}
           </div>
@@ -296,7 +378,7 @@ export default function Settings() {
                   placeholder={DEFAULT_ENDPOINTS[newDraft.provider] || 'https://...'}
                 />
               </div>
-              {newDraft.provider !== 'ollama' && (
+              {newDraft.provider !== 'ollama' && newDraft.provider !== 'lmstudio' && (
                 <div className={styles.formRow}>
                   <label className={styles.formLabel}>API Key</label>
                   <input
@@ -310,14 +392,35 @@ export default function Settings() {
                 </div>
               )}
               <div className={styles.formRow}>
-                <label className={styles.formLabel}>Models</label>
-                <input
-                  className={styles.formInput}
-                  value={newModelsText}
-                  onChange={(e) => setNewModelsText(e.target.value)}
-                  placeholder="model-id-1, model-id-2"
-                />
-                <div className={styles.formHint}>Comma-separated list of model IDs</div>
+                <label className={styles.formLabel}>Available Models</label>
+                <div className={styles.modelsFetchRow}>
+                  <button
+                    className={styles.buttonSecondary}
+                    onClick={handleFetchNewModels}
+                    disabled={newFetchingModels}
+                  >
+                    {newFetchingModels ? 'Fetching…' : 'Fetch Models'}
+                  </button>
+                  {newFetchError && <span className={styles.fetchError}>{newFetchError}</span>}
+                </div>
+                {newDisplayModels.length > 0 ? (
+                  <div className={styles.modelCheckboxList}>
+                    {newDisplayModels.map((modelId) => (
+                      <label key={modelId} className={styles.modelCheckboxRow}>
+                        <input
+                          type="checkbox"
+                          checked={newDraft.models.includes(modelId)}
+                          onChange={() => toggleNewModel(modelId)}
+                        />
+                        <span>{modelId}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.formHint}>
+                    Click "Fetch Models" to load available models from this provider.
+                  </div>
+                )}
               </div>
               <div className={styles.formActions}>
                 <button className={styles.buttonSecondary} onClick={handleCancelNew}>

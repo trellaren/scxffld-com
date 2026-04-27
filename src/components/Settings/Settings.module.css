@@ -255,3 +255,46 @@
 .buttonAddProvider:hover {
   background-color: #0a2a3d;
 }
+
+.modelsFetchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fetchError {
+  font-size: 12px;
+  color: #cc5555;
+}
+
+.modelCheckboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  padding: 6px 8px;
+  background-color: #2d2d2d;
+}
+
+.modelCheckboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.modelCheckboxRow:hover {
+  color: #ffffff;
+}
+
+.modelCheckboxRow input[type='checkbox'] {
+  accent-color: #007acc;
+  cursor: pointer;
+}

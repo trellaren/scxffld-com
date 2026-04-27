@@ -157,3 +157,13 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.messageBubbleTyping {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
