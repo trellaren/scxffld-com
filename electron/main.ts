@@ -7,8 +7,44 @@ import {
   type MenuItemConstructorOptions,
 } from "electron";
 import path from "path";
+import fs from "fs";
 
 const isDev = !app.isPackaged;
+
+function getWindowBoundsPath() {
+  return path.join(app.getPath("userData"), "window-bounds.json");
+}
+
+interface SavedBounds {
+  width: number;
+  height: number;
+  x?: number;
+  y?: number;
+}
+
+function loadWindowBounds(): SavedBounds {
+  try {
+    const raw = fs.readFileSync(getWindowBoundsPath(), "utf-8");
+    const bounds = JSON.parse(raw);
+    if (
+      typeof bounds.width === "number" &&
+      typeof bounds.height === "number"
+    ) {
+      return bounds as SavedBounds;
+    }
+  } catch {
+    // first launch or corrupt file – use defaults
+  }
+  return { width: 1280, height: 800 };
+}
+
+function saveWindowBounds(win: BrowserWindow) {
+  try {
+    fs.writeFileSync(getWindowBoundsPath(), JSON.stringify(win.getBounds()), "utf-8");
+  } catch {
+    // non-critical – ignore write errors
+  }
+}
 
 function toggleFocusedWindowDevTools() {
   BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools();
@@ -42,9 +78,14 @@ function createAppMenu() {
 }
 
 function createWindow() {
+  const savedBounds = loadWindowBounds();
+
   const win = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    width: savedBounds.width,
+    height: savedBounds.height,
+    ...(savedBounds.x !== undefined && savedBounds.y !== undefined
+      ? { x: savedBounds.x, y: savedBounds.y }
+      : {}),
     minWidth: 800,
     minHeight: 600,
     frame: false,
@@ -65,6 +106,12 @@ function createWindow() {
     }
   });
   ipcMain.on("window:close", () => win.close());
+
+  win.on("close", () => {
+    if (!win.isMaximized() && !win.isMinimized()) {
+      saveWindowBounds(win);
+    }
+  });
 
   win.on("closed", () => {
     ipcMain.removeAllListeners("window:minimize");
