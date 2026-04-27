@@ -17,6 +17,8 @@ export interface Panel {
 export interface FileEntry {
   name: string
   path: string
+  kind?: 'file' | 'folder'
+  virtual?: boolean
 }
 
 export interface DiagramData {
@@ -119,6 +121,37 @@ const workspaceSlice = createSlice({
       state.openFolderName = null
       state.openFolderFiles = []
     },
+    addFolderEntry(state, action: PayloadAction<FileEntry>) {
+      state.openFolderFiles.push(action.payload)
+    },
+    removeFolderEntry(state, action: PayloadAction<string>) {
+      const path = action.payload
+      // Remove the entry and any children (entries whose path starts with path + '/')
+      state.openFolderFiles = state.openFolderFiles.filter(
+        (f) => f.path !== path && !f.path.startsWith(path + '/'),
+      )
+    },
+    renameFolderEntry(
+      state,
+      action: PayloadAction<{ path: string; newName: string }>,
+    ) {
+      const { path, newName } = action.payload
+      const entry = state.openFolderFiles.find((f) => f.path === path)
+      if (!entry) return
+      const lastSlash = entry.path.lastIndexOf('/')
+      const newPath = lastSlash >= 0 ? entry.path.slice(0, lastSlash + 1) + newName : newName
+      const oldPath = entry.path
+      entry.name = newName
+      entry.path = newPath
+      // Update children paths when renaming a folder
+      if (entry.kind === 'folder') {
+        state.openFolderFiles
+          .filter((f) => f.path.startsWith(oldPath + '/'))
+          .forEach((child) => {
+            child.path = newPath + child.path.slice(oldPath.length)
+          })
+      }
+    },
     setDiagramData(state, action: PayloadAction<{ tabId: string; data: DiagramData }>) {
       state.diagramData[action.payload.tabId] = action.payload.data
     },
@@ -137,6 +170,9 @@ export const {
   setSplitDirection,
   openFolder,
   closeFolder,
+  addFolderEntry,
+  removeFolderEntry,
+  renameFolderEntry,
   setDiagramData,
 } = workspaceSlice.actions
 export default workspaceSlice.reducer
